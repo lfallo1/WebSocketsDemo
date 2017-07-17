@@ -1,0 +1,11 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header">
+    <meta charset="UTF-8" />
+    <meta name="csrf-token" th:content="${_csrf.token}" />
+    <title th:text="${title}">Page Title</title>
+
+    <link th:href="@{/bower/bootstrap/dist/css/bootstrap.css}" rel="stylesheet" media="screen"/>
+    <link th:href="@{/dist/css/app.css}" href="../../static/app.css" type="text/css" rel="stylesheet" />
+    <link th:href="@{/dist/css/form.css}" href="../../static/app.css" type="text/css" rel="stylesheet" />
+</head>
+</html>

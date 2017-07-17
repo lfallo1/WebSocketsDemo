@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div id="app">
+
+    <!-- inline template (can use thymeleaf within an inline template) -->
+
+    <div class="container">
+        <div class="row" th:if="${filtered}">
+            <div class="col-xs-12 text-center">
+                <a th:href="@{/}" href="/">View all</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h1 th:text="#{index.site.headline}">Chat demo</h1>
+            </div>
+        </div>
+
+        <!--<app-textinput sec:authorize="isAuthenticated()"></app-textinput>-->
+        <app-textinput></app-textinput>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/scripts :: scripts"></div>
+
+</body>
+</html>
