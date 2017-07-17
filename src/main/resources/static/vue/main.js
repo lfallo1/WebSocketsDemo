@@ -1,6 +1,6 @@
 import Vue from "vue";
 import TextInput from "./TextInput.vue";
-import config from './config.js';
+import config from "./config.js";
 
 //add components
 Vue.component('app-textinput', TextInput);

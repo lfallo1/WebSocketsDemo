@@ -17,6 +17,9 @@
 </template>
 
 <script>
+
+    import Stomp from 'stompjs';
+
     export default{
         data () {
             return {
@@ -24,59 +27,58 @@
                 currentMessage: "",
                 currentLine: "",
                 connected: false,
-                color: false
+                color: false,
+                stompClient: {}
             }
         },
         methods: {
             nextCharacter(e){
-                if(this.isCharacterKeyPress(e)){
-                    this.ws.send(e.key);
+                if (this.isCharacterKeyPress(e)) {
+                    this.stompClient.send("/app/name", {},
+                        JSON.stringify({'from': "lfallo1", 'text': e.key}));
                 }
             },
+
             connect() {
-                this.ws = new WebSocket('ws://localhost:8080/name');
-                this.ws.onmessage = this.onMessage;
-                this.connected = true;
-                this.ws.onClose = this.disconnect;
-                this.ws.onerror = (err) => console.log("ERROR: " + err);
+                var socket = new SockJS('/name');
+                this.stompClient = Stomp.over(socket);
+                this.stompClient.connect({}, (frame) => {
+                    this.connected = true
+                    console.log('Connected: ' + frame);
+                    this.stompClient.subscribe('/topic/messages', (data) => {
+                        this.showMessage(data);
+                    });
+                });
             },
 
             disconnect() {
-                if (this.ws != null) {
-                    this.ws.close();
+                if (this.stompClient != null) {
+                    this.stompClient.disconnect();
                 }
                 this.connected = false;
-                console.log("Disconnected");
+            },
+
+            sendMessage(e) {
+                this.stompClient.send("/app/name", {},
+                    JSON.stringify({'from': "lfallo1", 'text': e.key}));
+            },
+
+            showMessage(data) {
+                this.currentLine += JSON.parse(data.body).text;
             },
 
             carriageReturn() {
-                this.ws.send("enter");
-            },
-
-            onMessage(char) {
-                let value = char.data;
-                if(value.toLowerCase() == 'enter') {
-                    this.messages.push({data: this.currentLine, textClass: this.textColor})
-                    this.currentLine = "";
-                    this.currentMessage = "";
-                    this.color = !this.color;
-                }
-                else if(value.toLowerCase() == 'backspace'){
-                    if(this.currentLine.length > 0){
-                        this.currentLine = this.currentLine.substring(0,this.currentLine.length-1)
-                    }
-                } else{
-                    this.currentLine += value
-                }
+                this.stompClient.send("/app/name", {},
+                    JSON.stringify({'from': "lfallo1", 'text': {body: "enter"}}));
             },
             isCharacterKeyPress(e) {
                 var keycode = e.keyCode;
 
                 var valid =
-                    (keycode > 47 && keycode < 58)   || // number keys
-                    (keycode == 32 || keycode == 13 || keycode == 8)   || // spacebar & return key(s) (if you want to allow carriage returns)
-                    (keycode > 64 && keycode < 91)   || // letter keys
-                    (keycode > 95 && keycode < 112)  || // numpad keys
+                    (keycode > 47 && keycode < 58) || // number keys
+                    (keycode == 32 || keycode == 13 || keycode == 8) || // spacebar & return key(s) (if you want to allow carriage returns)
+                    (keycode > 64 && keycode < 91) || // letter keys
+                    (keycode > 95 && keycode < 112) || // numpad keys
                     (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
                     (keycode > 218 && keycode < 223);   // [\]' (in order)
 
@@ -87,21 +89,18 @@
             textColor(){
                 return this.color ? 'text-info' : 'text-warning'
             }
-        },
-        created(){
-            this.connect()
         }
     }
 </script>
 
 <style scoped>
-    #current-line{
+    #current-line {
         padding: 12px;
         font-weight: bold;
         font-size: 22px;
     }
 
-    li{
+    li {
         font-size: 20px;
     }
 </style>
