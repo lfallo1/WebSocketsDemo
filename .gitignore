@@ -1,7 +1,8 @@
 node_modules/
 bower/
 target/
-dist/
+src/main/resources/static/dist/bower/
+src/main/resources/static/dist/vue/
 
 # Compiled source #
 ###################
