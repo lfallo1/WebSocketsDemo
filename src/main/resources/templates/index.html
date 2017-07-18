@@ -20,7 +20,24 @@
         </div>
 
         <!--<app-textinput sec:authorize="isAuthenticated()"></app-textinput>-->
-        <app-textinput></app-textinput>
+        <app-textmessages inline-template>
+
+            <div id="chat-window-container">
+                <div id="chat-window" class="text-center">
+                    <div>
+                        <li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>
+                    </div>
+                    <div :class="connected ? 'text-success' : 'text-danger'">{{connected ? 'Connected' : 'Disconnected'}}</div>
+                    <div sec:authorize="isAuthenticated()">
+                        <input type="text" @keydown="nextCharacter" v-model="currentMessage"></input>
+                        <button @click="carriageReturn">Send</button>
+                    </div>
+                    <div id="current-line" :class="textColor">{{currentLine}}</div>
+                    <button v-if="connected" @click="disconnect">Disconnect</button>
+                    <button v-else @click="connect">Connect</button>
+                </div>
+            </div>
+        </app-textmessages>
     </div>
 </div>
 

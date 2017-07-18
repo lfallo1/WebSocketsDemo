@@ -36,7 +36,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 //		// @formatter:off
         http
-//                .csrf().disable()
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
                 .and().authorizeRequests().antMatchers("/", "/chat", "/topic/messages", "/chat/**", "/name", "/name/**").permitAll() //routes
                 .and().formLogin()

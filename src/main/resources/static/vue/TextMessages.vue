@@ -1,24 +1,25 @@
 <template>
     <div id="chat-window-container">
-        <div id="chat-window" class="text-center">
-            <div>
-                <li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>
-            </div>
-            <div :class="connected ? 'text-success' : 'text-danger'">{{connected ? 'Connected' : 'Disconnected'}}</div>
+        <!--<div id="chat-window" class="text-center">-->
+            <!--<div>-->
+                <!--<li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>-->
+            <!--</div>-->
+            <!--<div :class="connected ? 'text-success' : 'text-danger'">{{connected ? 'Connected' : 'Disconnected'}}</div>-->
 
-            <input type="text" @keydown="nextCharacter" v-model="currentMessage"></input>
-            <button @click="carriageReturn">Send</button>
-            <div id="current-line" :class="textColor">{{currentLine}}</div>
+            <!--<input type="text" @keydown="nextCharacter" v-model="currentMessage"></input>-->
+            <!--<button @click="carriageReturn">Send</button>-->
+            <!--<div id="current-line" :class="textColor">{{currentLine}}</div>-->
 
-            <button v-if="connected" @click="disconnect">Disconnect</button>
-            <button v-else @click="connect">Connect</button>
-        </div>
+            <!--<button v-if="connected" @click="disconnect">Disconnect</button>-->
+            <!--<button v-else @click="connect">Connect</button>-->
+        <!--</div>-->
     </div>
 </template>
 
 <script>
 
     import Stomp from 'stompjs';
+    import config from './config.js';
 
     export default{
         data () {
@@ -28,21 +29,16 @@
                 currentLine: "",
                 connected: false,
                 color: false,
-                stompClient: {}
+                stompClient: {},
+                csrf: ""
             }
         },
         methods: {
-            nextCharacter(e){
-                if (this.isCharacterKeyPress(e)) {
-                    this.stompClient.send("/app/name", {},
-                        JSON.stringify({'from': "lfallo1", 'text': e.key}));
-                }
-            },
 
             connect() {
                 var socket = new SockJS('/name');
                 this.stompClient = Stomp.over(socket);
-                this.stompClient.connect({}, (frame) => {
+                this.stompClient.connect({'X-CSRF-TOKEN': this.csrf}, (frame) => {
                     this.connected = true
                     console.log('Connected: ' + frame);
                     this.stompClient.subscribe('/topic/messages', (data) => {
@@ -58,18 +54,38 @@
                 this.connected = false;
             },
 
-            sendMessage(e) {
-                this.stompClient.send("/app/name", {},
-                    JSON.stringify({'from': "lfallo1", 'text': e.key}));
-            },
-
-            showMessage(data) {
-                this.currentLine += JSON.parse(data.body).text;
+            nextCharacter(e){
+                if (this.isCharacterKeyPress(e)) {
+                    this.send('lfallo1',e.key);
+                }
             },
 
             carriageReturn() {
+                this.send('lfallo1', 'enter');
+            },
+
+            showMessage(data) {
+
+                let value = JSON.parse(data.body).text;
+                if(value.toLowerCase() == 'enter') {
+                    this.messages.push({data: this.currentLine, textClass: this.textColor})
+                    this.currentLine = "";
+                    this.currentMessage = "";
+                    this.color = !this.color;
+                }
+                else if(value.toLowerCase() == 'backspace'){
+                    if(this.currentLine.length > 0){
+                        this.currentLine = this.currentLine.substring(0,this.currentLine.length-1)
+                    }
+                } else{
+                    this.currentLine += value
+                }
+
+            },
+
+            send(from, msg){
                 this.stompClient.send("/app/name", {},
-                    JSON.stringify({'from': "lfallo1", 'text': {body: "enter"}}));
+                    JSON.stringify({'from': from, 'text': msg}));
             },
             isCharacterKeyPress(e) {
                 var keycode = e.keyCode;
@@ -89,6 +105,9 @@
             textColor(){
                 return this.color ? 'text-info' : 'text-warning'
             }
+        },
+        created(){
+            this.csrf = config.getCsrfHeader();
         }
     }
 </script>
