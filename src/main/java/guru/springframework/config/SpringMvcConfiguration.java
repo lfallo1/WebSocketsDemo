@@ -3,7 +3,6 @@ package guru.springframework.config;
 import guru.springframework.config.interceptors.LoginPageInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -61,14 +60,14 @@ public class SpringMvcConfiguration extends WebMvcConfigurerAdapter {
         return new SpringSecurityDialect();
     }
 
-    @Bean(name = "dataSource")
-    public DriverManagerDataSource dataSource() {
-        DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
-        driverManagerDataSource.setDriverClassName("org.postgresql.Driver");
-        driverManagerDataSource.setUrl("jdbc:postgresql://localhost:5432/SpringProducts");
-        driverManagerDataSource.setUsername("postgres");
-        driverManagerDataSource.setPassword("admin");
-        return driverManagerDataSource;
-    }
+//    @Bean(name = "dataSource")
+//    public DriverManagerDataSource dataSource() {
+//        DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
+//        driverManagerDataSource.setDriverClassName("driver");
+//        driverManagerDataSource.setUrl("database_url");
+//        driverManagerDataSource.setUsername("username");
+//        driverManagerDataSource.setPassword("password");
+//        return driverManagerDataSource;
+//    }
 
 }

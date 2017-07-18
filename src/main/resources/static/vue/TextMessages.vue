@@ -1,18 +1,30 @@
 <template>
     <div id="chat-window-container">
-        <!--<div id="chat-window" class="text-center">-->
-            <!--<div>-->
-                <!--<li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>-->
-            <!--</div>-->
-            <!--<div :class="connected ? 'text-success' : 'text-danger'">{{connected ? 'Connected' : 'Disconnected'}}</div>-->
+        <div id="chat-window" class="text-center">
+            <div>
+                <li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>
+            </div>
 
-            <!--<input type="text" @keydown="nextCharacter" v-model="currentMessage"></input>-->
-            <!--<button @click="carriageReturn">Send</button>-->
-            <!--<div id="current-line" :class="textColor">{{currentLine}}</div>-->
+            <div id="input-container" v-if="auth.name">
+                <input :disabled="!subscribed" type="text" @keydown="nextCharacter" v-model="currentMessage"></input>
+                <button class="btn btn-primary" :disabled="!subscribed" @click="carriageReturn">Send</button>
+            </div>
+            <div id="current-line" :class="textColor">{{currentLine}}</div>
 
-            <!--<button v-if="connected" @click="disconnect">Disconnect</button>-->
-            <!--<button v-else @click="connect">Connect</button>-->
-        <!--</div>-->
+            <button class="btn btn-danger" v-if="connected" @click="disconnect"><span class="glyphicon glyphicon-remove"></span>Disconnect</button>
+            <button v-else class="btn btn-success" @click="connect"><span class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server</button>
+
+            <br>
+
+            <div id="subscription-list" v-if="connected">
+                <h3 v-if="auth.name">Select feed</h3>
+                <h3 v-else>Subscribe to feed</h3>
+                <div class="btn-group text-center" role="group">
+                    <button :class="{'active' : subscribed == channel}" class="btn btn-default" @click="subscribe(channel)" v-for="channel in channels">{{channel}}</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 </template>
 
@@ -20,9 +32,11 @@
 
     import Stomp from 'stompjs';
     import config from './config.js';
+    import axios from 'axios';
+    import { eventBus } from './main.js';
 
-    export default{
-        data () {
+    export default {
+        data() {
             return {
                 messages: [],
                 currentMessage: "",
@@ -30,7 +44,11 @@
                 connected: false,
                 color: false,
                 stompClient: {},
-                csrf: ""
+                csrf: "",
+                auth: {},
+                transcribing: false,
+                subscribed: false,
+                channels: ['msdn', 'traffic', 'lrpu']
             }
         },
         methods: {
@@ -39,52 +57,63 @@
                 var socket = new SockJS('/name');
                 this.stompClient = Stomp.over(socket);
                 this.stompClient.connect({'X-CSRF-TOKEN': this.csrf}, (frame) => {
-                    this.connected = true
+                    eventBus.$emit('connected', {value: true});
                     console.log('Connected: ' + frame);
-                    this.stompClient.subscribe('/topic/messages', (data) => {
+                });
+            },
+
+            subscribe(channel) {
+                if (this.subscribed) {
+                    return;
+                }
+
+                if (this.stompClient.subscribe) {
+                    this.stompClient.subscribe('/topic/messages/' + channel, (data) => {
                         this.showMessage(data);
                     });
-                });
+                    eventBus.$emit('subscribed', {value: channel});
+                }
             },
 
             disconnect() {
                 if (this.stompClient != null) {
                     this.stompClient.disconnect();
                 }
-                this.connected = false;
+                eventBus.$emit('connected', {value: false});
+                eventBus.$emit('subscribed', {value: false});
             },
 
-            nextCharacter(e){
+            nextCharacter(e) {
                 if (this.isCharacterKeyPress(e)) {
-                    this.send('lfallo1',e.key);
+                    this.send(this.auth.name, e.key);
                 }
             },
 
             carriageReturn() {
-                this.send('lfallo1', 'enter');
+                this.send(this.auth.name, 'enter');
             },
 
             showMessage(data) {
 
                 let value = JSON.parse(data.body).text;
-                if(value.toLowerCase() == 'enter') {
+                if (value.toLowerCase() == 'enter') {
                     this.messages.push({data: this.currentLine, textClass: this.textColor})
                     this.currentLine = "";
                     this.currentMessage = "";
                     this.color = !this.color;
                 }
-                else if(value.toLowerCase() == 'backspace'){
-                    if(this.currentLine.length > 0){
-                        this.currentLine = this.currentLine.substring(0,this.currentLine.length-1)
+                else if (value.toLowerCase() == 'backspace') {
+                    if (this.currentLine.length > 0) {
+                        this.currentLine = this.currentLine.substring(0, this.currentLine.length - 1)
                     }
-                } else{
+                } else {
                     this.currentLine += value
                 }
 
             },
 
-            send(from, msg){
-                this.stompClient.send("/app/name", {},
+            send(from, msg) {
+                this.stompClient.send("/app/name/" + this.subscribed, {},
                     JSON.stringify({'from': from, 'text': msg}));
             },
             isCharacterKeyPress(e) {
@@ -102,12 +131,25 @@
             }
         },
         computed: {
-            textColor(){
+            textColor() {
                 return this.color ? 'text-info' : 'text-warning'
             }
         },
-        created(){
+        created() {
+
+            //subscribe to event bus
+            eventBus.$on('connected', (data)=> this.connected = data.value);
+            eventBus.$on('subscribed', (data)=> this.subscribed = data.value);
+            eventBus.$on('auth', (data)=> this.auth = data.value);
+
             this.csrf = config.getCsrfHeader();
+            axios.get('api/user')
+                .then(res => {
+                    eventBus.$emit('auth', {value: res.data});
+                })
+                .catch(err => {
+                    console.log("Not logged in")
+                });
         }
     }
 </script>
@@ -121,5 +163,38 @@
 
     li {
         font-size: 20px;
+    }
+
+    #subscription-list .btn{
+        color: #428bca;
+    }
+
+    #subscription-list h3{
+        color: #428bca;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    #chat-window input{
+        width: 75%;
+        height: 40px;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.3);
+        background: white;
+        font-size: 26px;
+        padding-left: 10px;
+        font-weight: bold;
+    }
+
+    #input-container button{
+        margin-left: -10px;
+        margin-top: -9px;
+        font-size: 20px;
+        font-weight: bold;
+        height: 40px;
+    }
+
+    #input-container{
+        margin-top: 30px;
     }
 </style>
