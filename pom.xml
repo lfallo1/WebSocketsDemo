@@ -23,6 +23,11 @@
         <java.version>1.8</java.version>
         <thymeleaf.version>3.0.3.RELEASE</thymeleaf.version>
         <thymeleaf-layout-dialect.version>2.1.1</thymeleaf-layout-dialect.version>
+        <docker.image.prefix>lfallo1</docker.image.prefix>
+        <docker.image.name>websocket-demo</docker.image.name>
+        <docker.host>http://127.0.0.1:2375</docker.host>
+        <docker.image.tag>${git.commit.id.abbrev}</docker.image.tag>
+        <git.generate.properties>true</git.generate.properties>
     </properties>
 
     <dependencies>

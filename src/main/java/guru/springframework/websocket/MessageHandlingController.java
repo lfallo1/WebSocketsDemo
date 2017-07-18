@@ -14,6 +14,6 @@ public class MessageHandlingController {
     @SendTo("/topic/messages/{channel}")
     public OutputMessage send(@DestinationVariable String channel, Message message) throws Exception {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
-        return new OutputMessage(message.getFrom(), message.getText(), time);
+        return new OutputMessage(message.getFrom(), message.getText(), time, channel);
     }
 }

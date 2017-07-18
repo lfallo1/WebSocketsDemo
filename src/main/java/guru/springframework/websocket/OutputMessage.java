@@ -5,14 +5,24 @@ package guru.springframework.websocket;
  */
 public class OutputMessage {
     private String from;
+    private String channel;
     private String text;
     private String time;
 
-    public OutputMessage(final String from, final String text, final String time) {
+    public OutputMessage(final String from, final String text, final String time, final String channel) {
 
         this.from = from;
+        this.channel = channel;
         this.text = text;
         this.time = time;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
 
     public String getText() {

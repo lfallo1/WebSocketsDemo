@@ -13,7 +13,7 @@
                     <a class="navbar-brand" href="#">Websocket Demo</a>
                     <ul class="nav navbar-nav">
                         <li class="connected-navbar-message" :class="{'connected':connected, 'disconnected':!connected}">
-                            <a href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}}</a>
+                            <a href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}} {{subscribedText}}</a>
                         </li>
                     </ul>
                 </div>
@@ -46,14 +46,30 @@
         data(){
             return {
                 auth: {},
-                subscribed: false,
+                subscribed: [],
                 connected: false,
                 navbarDropdownIsOpen: false
             }
         },
+        computed: {
+            subscribedText(){
+                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.toString() + ')' : '';
+            }
+        },
+        methods: {
+            handleUnsubscribe(data){
+                for(let i = 0; i < this.subscribed.length; i++){
+                    if(this.subscribed[i] === data.value){
+                        this.subscribed.splice(i,1);
+                        return;
+                    }
+                }
+            }
+        },
         created(){
             eventBus.$on('connected', (data)=> this.connected = data.value);
-            eventBus.$on('subscribed', (data)=> this.subscribed = data.value);
+            eventBus.$on('addSubscription', (data)=> this.subscribed.push(data.value));
+            eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('auth', (data)=> this.auth = data.value);
         }
     }

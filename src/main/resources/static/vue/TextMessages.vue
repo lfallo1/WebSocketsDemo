@@ -6,8 +6,8 @@
             </div>
 
             <div id="input-container" v-if="auth.name">
-                <input :disabled="!subscribed" type="text" @keydown="nextCharacter" v-model="currentMessage"></input>
-                <button class="btn btn-primary" :disabled="!subscribed" @click="carriageReturn">Send</button>
+                <input :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter" v-model="currentMessage"></input>
+                <button class="btn btn-primary" :disabled="subscribed.length == 0" @click="carriageReturn">Send</button>
             </div>
             <div id="current-line" :class="textColor">{{currentLine}}</div>
 
@@ -20,7 +20,7 @@
                 <h3 v-if="auth.name">Select feed</h3>
                 <h3 v-else>Subscribe to feed</h3>
                 <div class="btn-group text-center" role="group">
-                    <button :class="{'active' : subscribed == channel}" class="btn btn-default" @click="subscribe(channel)" v-for="channel in channels">{{channel}}</button>
+                    <button :class="{'active' : subscribed.indexOf(channel) > -1}" class="btn btn-default" @click="toggleSubscription(channel)" v-for="channel in channels">{{channel}}</button>
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
                 csrf: "",
                 auth: {},
                 transcribing: false,
-                subscribed: false,
+                subscribed: [],
                 channels: ['msdn', 'traffic', 'lrpu']
             }
         },
@@ -62,16 +62,30 @@
                 });
             },
 
-            subscribe(channel) {
-                if (this.subscribed) {
+            toggleSubscription(channel) {
+
+                //for now disallow multiple channels
+                if(this.subscribed.length > 0){
                     return;
                 }
 
-                if (this.stompClient.subscribe) {
+                if (this.subscribed.indexOf(channel) > -1) {
+                    this.stompClient.unsubscribe('/topic/messages/channel');
+                    eventBus.$emit('unsubscribe', {value: channel});
+                } else if (this.stompClient.subscribe) {
                     this.stompClient.subscribe('/topic/messages/' + channel, (data) => {
                         this.showMessage(data);
                     });
-                    eventBus.$emit('subscribed', {value: channel});
+                    eventBus.$emit('addSubscription', {value: channel});
+                }
+            },
+
+            handleUnsubscribe(data){
+                for(let i = 0; i < this.subscribed.length; i++){
+                    if(this.subscribed[i] === data.value){
+                        this.subscribed.splice(i,1);
+                        return;
+                    }
                 }
             },
 
@@ -96,6 +110,7 @@
             showMessage(data) {
 
                 let value = JSON.parse(data.body).text;
+                let channel = JSON.parse(data.body).channel;
                 if (value.toLowerCase() == 'enter') {
                     this.messages.push({data: this.currentLine, textClass: this.textColor})
                     this.currentLine = "";
@@ -137,9 +152,10 @@
         },
         created() {
 
-            //subscribe to event bus
+            //setup event bus handlers
             eventBus.$on('connected', (data)=> this.connected = data.value);
-            eventBus.$on('subscribed', (data)=> this.subscribed = data.value);
+            eventBus.$on('addSubscription', (data)=> this.subscribed.push(data.value));
+            eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('auth', (data)=> this.auth = data.value);
 
             this.csrf = config.getCsrfHeader();
