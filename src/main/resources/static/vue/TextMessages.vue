@@ -6,13 +6,17 @@
             </div>
 
             <div id="input-container" v-if="auth.name">
-                <input :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter" v-model="currentMessage"></input>
+                <input :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
+                       v-model="currentMessage"></input>
                 <button class="btn btn-primary" :disabled="subscribed.length == 0" @click="carriageReturn">Send</button>
             </div>
             <div id="current-line" :class="textColor">{{currentLine}}</div>
 
-            <button class="btn btn-danger" v-if="connected" @click="disconnect"><span class="glyphicon glyphicon-remove"></span>Disconnect</button>
-            <button v-else class="btn btn-success" @click="connect"><span class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server</button>
+            <button class="btn btn-danger" v-if="connected" @click="disconnect"><span
+                    class="glyphicon glyphicon-remove"></span>Disconnect
+            </button>
+            <button v-else class="btn btn-success" @click="connect"><span class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server
+            </button>
 
             <br>
 
@@ -20,7 +24,9 @@
                 <h3 v-if="auth.name">Select feed</h3>
                 <h3 v-else>Subscribe to feed</h3>
                 <div class="btn-group text-center" role="group">
-                    <button :class="{'active' : subscribed.indexOf(channel) > -1}" class="btn btn-default" @click="toggleSubscription(channel)" v-for="channel in channels">{{channel}}</button>
+                    <button :class="{'active' : subscribed.indexOf(channel) > -1}" class="btn btn-default"
+                            @click="toggleSubscription(channel)" v-for="channel in channels">{{channel}}
+                    </button>
                 </div>
             </div>
 
@@ -33,7 +39,7 @@
     import Stomp from 'stompjs';
     import config from './config.js';
     import axios from 'axios';
-    import { eventBus } from './main.js';
+    import {eventBus} from './main.js';
 
     export default {
         data() {
@@ -65,7 +71,7 @@
             toggleSubscription(channel) {
 
                 //for now disallow multiple channels
-                if(this.subscribed.length > 0){
+                if (this.subscribed.length > 0) {
                     return;
                 }
 
@@ -80,10 +86,10 @@
                 }
             },
 
-            handleUnsubscribe(data){
-                for(let i = 0; i < this.subscribed.length; i++){
-                    if(this.subscribed[i] === data.value){
-                        this.subscribed.splice(i,1);
+            handleUnsubscribe(data) {
+                for (let i = 0; i < this.subscribed.length; i++) {
+                    if (this.subscribed[i] === data.value) {
+                        this.subscribed.splice(i, 1);
                         return;
                     }
                 }
@@ -94,7 +100,7 @@
                     this.stompClient.disconnect();
                 }
                 eventBus.$emit('connected', {value: false});
-                eventBus.$emit('subscribed', {value: false});
+                eventBus.$emit('subscribed', {value: []});
             },
 
             nextCharacter(e) {
@@ -153,10 +159,10 @@
         created() {
 
             //setup event bus handlers
-            eventBus.$on('connected', (data)=> this.connected = data.value);
-            eventBus.$on('addSubscription', (data)=> this.subscribed.push(data.value));
+            eventBus.$on('connected', (data) => this.connected = data.value);
+            eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
-            eventBus.$on('auth', (data)=> this.auth = data.value);
+            eventBus.$on('auth', (data) => this.auth = data.value);
 
             this.csrf = config.getCsrfHeader();
             axios.get('api/user')
@@ -181,28 +187,28 @@
         font-size: 20px;
     }
 
-    #subscription-list .btn{
+    #subscription-list .btn {
         color: #428bca;
     }
 
-    #subscription-list h3{
+    #subscription-list h3 {
         color: #428bca;
         font-size: 20px;
         font-weight: bold;
     }
 
-    #chat-window input{
+    #chat-window input {
         width: 75%;
         height: 40px;
         border-radius: 4px;
-        border: 1px solid rgba(0,0,0,0.3);
+        border: 1px solid rgba(0, 0, 0, 0.3);
         background: white;
         font-size: 26px;
         padding-left: 10px;
         font-weight: bold;
     }
 
-    #input-container button{
+    #input-container button {
         margin-left: -10px;
         margin-top: -9px;
         font-size: 20px;
@@ -210,7 +216,7 @@
         height: 40px;
     }
 
-    #input-container{
+    #input-container {
         margin-top: 30px;
     }
 </style>

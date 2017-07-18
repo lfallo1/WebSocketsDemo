@@ -1,9 +1,9 @@
 version: "3.1"
 services:
-  spring-boot-docker:
+  spring-boot-websocket:
     image: lfallo1/websocket-demo:9b13650
     restart: always
     ports:
-      - "8080:8080"
+      - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: prod
