@@ -70,17 +70,19 @@
 
             toggleSubscription(channel) {
 
-                //for now disallow multiple channels
-                if (this.subscribed.length > 0) {
+                if (this.subscribed.indexOf(channel) > -1) {
+                    this.stompClient.unsubscribe('/topic/messages/' + channel);
+                    eventBus.$emit('unsubscribe', {value: channel});
+                } //for now disallow multiple channels (This is temporary)
+                else if (this.subscribed.length > 0) {
                     return;
                 }
-
-                if (this.subscribed.indexOf(channel) > -1) {
-                    this.stompClient.unsubscribe('/topic/messages/channel');
-                    eventBus.$emit('unsubscribe', {value: channel});
-                } else if (this.stompClient.subscribe) {
+                else if (this.stompClient.subscribe) {
                     this.stompClient.subscribe('/topic/messages/' + channel, (data) => {
                         this.showMessage(data);
+                    });
+                    this.stompClient.subscribe('/topic/users/' + channel, (data) => {
+                        console.log("#participants has been updated", data);
                     });
                     eventBus.$emit('addSubscription', {value: channel});
                 }
@@ -100,7 +102,7 @@
                     this.stompClient.disconnect();
                 }
                 eventBus.$emit('connected', {value: false});
-                eventBus.$emit('subscribed', {value: []});
+                eventBus.$emit('clearSubscribed');
             },
 
             nextCharacter(e) {
@@ -134,7 +136,7 @@
             },
 
             send(from, msg) {
-                this.stompClient.send("/app/name/" + this.subscribed, {},
+                this.stompClient.send("/app/name/" + this.subscribed[0], {},
                     JSON.stringify({'from': from, 'text': msg}));
             },
             isCharacterKeyPress(e) {
@@ -162,6 +164,7 @@
             eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
+            eventBus.$on('clearSubscribed', () => this.subscribed = []);
             eventBus.$on('auth', (data) => this.auth = data.value);
 
             this.csrf = config.getCsrfHeader();

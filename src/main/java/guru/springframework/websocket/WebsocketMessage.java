@@ -3,7 +3,7 @@ package guru.springframework.websocket;
 /**
  * Created by lfallon on 7/17/2017.
  */
-public class Message {
+public class WebsocketMessage {
     private String from;
     private String text;
 

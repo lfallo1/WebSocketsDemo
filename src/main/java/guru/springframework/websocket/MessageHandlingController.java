@@ -10,10 +10,17 @@ import java.util.Date;
 
 @Controller
 public class MessageHandlingController {
+
     @MessageMapping("/name/{channel}")
     @SendTo("/topic/messages/{channel}")
-    public OutputMessage send(@DestinationVariable String channel, Message message) throws Exception {
+    public OutputMessage send(@DestinationVariable String channel, WebsocketMessage websocketMessage) throws Exception {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
-        return new OutputMessage(message.getFrom(), message.getText(), time, channel);
+        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, channel);
     }
+
+//    @MessageMapping("/users/{channel}")
+//    @SendTo("/topic/users/{channel}")
+//    public OutputMessage sendTotalUsers(@DestinationVariable String channel, String user) {
+//        return new OutputMessage("", "", null, user);
+//    }
 }

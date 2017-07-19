@@ -8,7 +8,7 @@ public class MessageHandlingController {
 
 //    @MessageMapping("/chat")
 //    @SendTo("/topic/messages")
-//    public Message send(Message message) throws Exception {
+//    public WebsocketMessage send(WebsocketMessage message) throws Exception {
 //        return message;
 //    }
 

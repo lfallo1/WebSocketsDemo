@@ -71,6 +71,7 @@
             eventBus.$on('addSubscription', (data)=> this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('auth', (data)=> this.auth = data.value);
+            eventBus.$on('clearSubscribed', ()=>this.subscribed = []);
         }
     }
 
