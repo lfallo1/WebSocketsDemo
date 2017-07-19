@@ -1,4 +1,4 @@
-package guru.springframework.domain;
+package guru.springframework.config.models;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

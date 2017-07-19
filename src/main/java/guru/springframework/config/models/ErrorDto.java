@@ -1,4 +1,4 @@
-package guru.springframework.domain;
+package guru.springframework.config.models;
 
 public class ErrorDto {
 

@@ -2,7 +2,7 @@ package guru.springframework.services;
 
 import org.springframework.stereotype.Service;
 
-import guru.springframework.domain.ErrorDto;
+import guru.springframework.config.models.ErrorDto;
 
 @Service
 public class ErrorService {
