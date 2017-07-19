@@ -47,7 +47,7 @@
     import {eventBus} from './main.js';
 
     export default {
-        data(){
+        data() {
             return {
                 auth: {},
                 subscribed: [],
@@ -57,12 +57,12 @@
             }
         },
         computed: {
-            subscribedText(){
-                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.toString() + ') ' + this.totalusers + " users" : '';
+            subscribedText() {
+                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.map(s => s.channel).toString() + ') ' + this.totalusers + " users" : '';
             }
         },
         methods: {
-            handleUnsubscribe(data){
+            handleUnsubscribe(data) {
                 for (let i = 0; i < this.subscribed.length; i++) {
                     if (this.subscribed[i] === data.value) {
                         this.subscribed.splice(i, 1);
@@ -71,7 +71,7 @@
                 }
             }
         },
-        created(){
+        created() {
             eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);

@@ -69,30 +69,47 @@
             },
 
             toggleSubscription(channel) {
-
-                if (this.subscribed.indexOf(channel) > -1) {
-                    this.stompClient.unsubscribe('/topic/messages/' + channel);
+                const subscription = this.subscribed.filter(s => s.channel == channel)[0];
+                if (subscription) {
                     eventBus.$emit('unsubscribe', {value: channel});
                 } //for now disallow multiple channels (This is temporary)
                 else if (this.subscribed.length > 0) {
                     return;
                 }
                 else if (this.stompClient.subscribe) {
-                    this.stompClient.subscribe('/topic/messages/' + channel, (data) => {
+
+                    let subscription = {
+                        endpoints: [],
+                        channel: channel
+                    };
+
+                    let sub = this.stompClient.subscribe('/topic/messages/' + channel, (data) => {
                         this.showMessage(data);
                     });
-                    this.stompClient.subscribe('/topic/users/' + channel, (data) => {
+                    subscription.endpoints.push(sub)
+
+
+                    sub = this.stompClient.subscribe('/topic/users/' + channel, (data) => {
                         console.log("#participants has been updated", data);
                         let sessionIds = JSON.parse(data.body)
                         eventBus.$emit('totalusers', {value: sessionIds.length});
                     });
-                    eventBus.$emit('addSubscription', {value: channel});
+                    subscription.endpoints.push(sub)
+
+                    eventBus.$emit('addSubscription', {value: subscription});
                 }
             },
 
             handleUnsubscribe(data) {
+                const channel = data.value;
+                const subscription = this.subscribed.filter(s => s.channel == channel)[0];
+                for (let i = 0; i < subscription.endpoints.length; i++) {
+                    subscription.endpoints[i].unsubscribe();
+                }
+
                 for (let i = 0; i < this.subscribed.length; i++) {
-                    if (this.subscribed[i] === data.value) {
+
+                    if (this.subscribed[i].channel === channel) {
                         this.subscribed.splice(i, 1);
                         return;
                     }
