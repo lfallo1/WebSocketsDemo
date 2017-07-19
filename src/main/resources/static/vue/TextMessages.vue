@@ -83,6 +83,8 @@
                     });
                     this.stompClient.subscribe('/topic/users/' + channel, (data) => {
                         console.log("#participants has been updated", data);
+                        let sessionIds = JSON.parse(data.body)
+                        eventBus.$emit('totalusers', {value: sessionIds.length});
                     });
                     eventBus.$emit('addSubscription', {value: channel});
                 }

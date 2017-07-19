@@ -23,7 +23,6 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
         messages
                 .simpTypeMatchers(SUBSCRIBE).permitAll()
                 .simpTypeMatchers(MESSAGE).authenticated();
-
     }
 
     @Override

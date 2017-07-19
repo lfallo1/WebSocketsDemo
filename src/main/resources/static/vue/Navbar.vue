@@ -4,7 +4,8 @@
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -12,7 +13,8 @@
                     </button>
                     <a class="navbar-brand" href="#">Websocket Demo</a>
                     <ul class="nav navbar-nav">
-                        <li class="connected-navbar-message" :class="{'connected':connected, 'disconnected':!connected}">
+                        <li class="connected-navbar-message"
+                            :class="{'connected':connected, 'disconnected':!connected}">
                             <a href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}} {{subscribedText}}</a>
                         </li>
                     </ul>
@@ -23,7 +25,9 @@
                     <ul class="nav navbar-nav navbar-right">
                         <li><a href="">{{auth.name ? 'Signed in as ' + auth.name : 'Not signed in'}}</a></li>
                         <li class="dropdown" :class="{'open' : navbarDropdownIsOpen}">
-                            <a @click.prevent.stop="navbarDropdownIsOpen = !navbarDropdownIsOpen" href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Account <span class="caret"></span></a>
+                            <a @click.prevent.stop="navbarDropdownIsOpen = !navbarDropdownIsOpen" href=""
+                               class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                               aria-expanded="false">Account <span class="caret"></span></a>
                             <ul class="dropdown-menu" v-if="!auth.name">
                                 <li><a href="/login">Signin</a></li>
                             </ul>
@@ -40,7 +44,7 @@
 
 <script>
 
-    import { eventBus } from './main.js';
+    import {eventBus} from './main.js';
 
     export default {
         data(){
@@ -48,45 +52,47 @@
                 auth: {},
                 subscribed: [],
                 connected: false,
-                navbarDropdownIsOpen: false
+                navbarDropdownIsOpen: false,
+                totalusers: 0
             }
         },
         computed: {
             subscribedText(){
-                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.toString() + ')' : '';
+                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.toString() + ') ' + this.totalusers + " users" : '';
             }
         },
         methods: {
             handleUnsubscribe(data){
-                for(let i = 0; i < this.subscribed.length; i++){
-                    if(this.subscribed[i] === data.value){
-                        this.subscribed.splice(i,1);
+                for (let i = 0; i < this.subscribed.length; i++) {
+                    if (this.subscribed[i] === data.value) {
+                        this.subscribed.splice(i, 1);
                         return;
                     }
                 }
             }
         },
         created(){
-            eventBus.$on('connected', (data)=> this.connected = data.value);
-            eventBus.$on('addSubscription', (data)=> this.subscribed.push(data.value));
+            eventBus.$on('connected', (data) => this.connected = data.value);
+            eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
-            eventBus.$on('auth', (data)=> this.auth = data.value);
-            eventBus.$on('clearSubscribed', ()=>this.subscribed = []);
+            eventBus.$on('auth', (data) => this.auth = data.value);
+            eventBus.$on('clearSubscribed', () => this.subscribed = []);
+            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
         }
     }
 
 </script>
 
 <style scoped>
-    li.disconnected a, li.connected a{
+    li.disconnected a, li.connected a {
         font-weight: bold;
     }
 
-    li.disconnected a{
+    li.disconnected a {
         color: #d9534f !important;
     }
 
-    li.connected a{
+    li.connected a {
         color: #449d44 !important;
     }
 </style>
