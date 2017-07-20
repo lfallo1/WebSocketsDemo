@@ -4,12 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.messaging.*;
+import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by lancefallon on 7/18/17.
@@ -20,26 +24,26 @@ public class WebSocketEvents {
     @Autowired
     private SimpMessagingTemplate messageTemplate;
 
-    private Set<String> mySet = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+//    private Set<String> mySet = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
-    private Map<String, Set<String>> channelCount = new HashMap<>();
+    private Map<String, Set<ChannelSubscription>> channelCount = new HashMap<>();
 
-    @EventListener
-    private void onSessionConnectedEvent(SessionConnectedEvent event) {
-        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
-
-        //add sessionid
-        mySet.add(sha.getSessionId());
-    }
-
-    @EventListener
-    private void onSessionDisconnectEvent(SessionDisconnectEvent event) {
-        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
-
-        //remove sessionid from set & remove participant from all individual channels
-        mySet.remove(sha.getSessionId());
-        removeParticipantFromChannels(event);
-    }
+//    @EventListener
+//    private void onSessionConnectedEvent(SessionConnectedEvent event) {
+//        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
+//
+//        //add sessionid
+//        mySet.add(sha.getSessionId());
+//    }
+//
+//    @EventListener
+//    private void onSessionDisconnectEvent(SessionDisconnectEvent event) {
+//        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
+//
+//        //remove sessionid from set & remove participant from all individual channels
+//        mySet.remove(sha.getSessionId());
+//        removeParticipantBySessionId(event);
+//    }
 
     @EventListener
     public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
@@ -52,16 +56,34 @@ public class WebSocketEvents {
     @EventListener
     public void handleSessionUnsubscribeEvent(SessionUnsubscribeEvent event) {
         System.out.println("handleSessionUnsubscribeEvent");
-        String channel = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SUBSCRIPTION_ID_HEADER, String.class);
+        String subscriptionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SUBSCRIPTION_ID_HEADER, String.class);
         //remove participant from channel
-        removeParticipant(event, channel);
+        removeParticipantBySubscriptionId(subscriptionId);
     }
 
     @EventListener
     public void handleSessionDisconnectEvent(SessionDisconnectEvent event) {
         System.out.println("handleSessionDisconnectEvent");
         //remove participant from channels
-        removeParticipantFromChannels(event);
+        removeParticipantBySessionId(event);
+    }
+
+    private void removeParticipantBySubscriptionId(String subscriptionId) {
+
+        for (String channel : this.channelCount.keySet()) {
+            Set<ChannelSubscription> subscriptions = this.channelCount.get(channel);
+            for (ChannelSubscription subscription : subscriptions) {
+                if (subscription.getSubscriptionId().equals(subscriptionId)) {
+                    subscriptions.remove(subscription);
+                    this.channelCount.put(channel, subscriptions);
+
+                    String destination = "/topic/users" + channel.substring(channel.lastIndexOf("/"));
+                    System.out.println("sending to " + destination);
+                    messageTemplate.convertAndSend(destination, subscriptions);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -69,50 +91,41 @@ public class WebSocketEvents {
      *
      * @param event
      */
-    private void removeParticipantFromChannels(AbstractSubProtocolEvent event) {
-        for (String key : this.channelCount.keySet()) {
-            String destination = "/topic/users" + key.substring(key.lastIndexOf("/"));
-            removeParticipant(event, key);
-        }
-    }
+    private void removeParticipantBySessionId(AbstractSubProtocolEvent event) {
+        for (String channel : this.channelCount.keySet()) {
 
-    /**
-     * remove
-     *
-     * @param event
-     */
-    private void removeParticipant(AbstractSubProtocolEvent event, String channel) {
+            String sessionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SESSION_ID_HEADER, String.class);
+            String destination = "/topic/users" + channel.substring(channel.lastIndexOf("/"));
 
-        String sessionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SESSION_ID_HEADER, String.class);
-        String destination = "/topic/users" + channel.substring(channel.lastIndexOf("/"));
+            Set<ChannelSubscription> subscriptions = this.channelCount.get(channel);
+            for (ChannelSubscription subscription : subscriptions) {
+                if (subscription.getSessionId().equals(sessionId)) {
+                    subscriptions.remove(subscription);
+                    this.channelCount.put(channel, subscriptions);
 
-        Set<String> sessionIds = this.channelCount.get(channel);
-        for (String s : sessionIds) {
-            if (s.equals(sessionId)) {
-                sessionIds.remove(s);
-                this.channelCount.put(channel, sessionIds);
-
-                System.out.println("sending to " + destination);
-                messageTemplate.convertAndSend(destination, sessionIds);
-                break;
+                    System.out.println("sending to " + destination);
+                    messageTemplate.convertAndSend(destination, subscriptions);
+                    break;
+                }
             }
         }
     }
 
     private void addParticipant(AbstractSubProtocolEvent event) {
 
+        String subscriptionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SUBSCRIPTION_ID_HEADER, String.class);
         String sessionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SESSION_ID_HEADER, String.class);
         String channel = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.DESTINATION_HEADER, String.class);
         String destination = "/topic/users" + channel.substring(channel.lastIndexOf("/"));
 
         if (this.channelCount.get(channel) == null) {
-            Set<String> sessionIds = new HashSet<>();
-            sessionIds.add(sessionId);
-            this.channelCount.put(channel, sessionIds);
+            Set<ChannelSubscription> subscriptions = new HashSet<>();
+            subscriptions.add(new ChannelSubscription(sessionId, subscriptionId));
+            this.channelCount.put(channel, subscriptions);
         } else {
-            Set<String> sessionIds = this.channelCount.get(channel);
-            sessionIds.add(sessionId);
-            this.channelCount.put(channel, sessionIds);
+            Set<ChannelSubscription> subscriptions = this.channelCount.get(channel);
+            subscriptions.add(new ChannelSubscription(sessionId, subscriptionId));
+            this.channelCount.put(channel, subscriptions);
         }
         System.out.println("sending to " + destination);
         messageTemplate.convertAndSend(destination, this.channelCount.get(channel));

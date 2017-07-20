@@ -24,7 +24,7 @@
                 <h3 v-if="auth.name">Select feed</h3>
                 <h3 v-else>Subscribe to feed</h3>
                 <div class="btn-group text-center" role="group">
-                    <button :class="{'active' : subscribed.indexOf(channel) > -1}" class="btn btn-default"
+                    <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}" class="btn btn-default"
                             @click="toggleSubscription(channel)" v-for="channel in channels">{{channel}}
                     </button>
                 </div>
@@ -72,8 +72,10 @@
                 const subscription = this.subscribed.filter(s => s.channel == channel)[0];
                 if (subscription) {
                     eventBus.$emit('unsubscribe', {value: channel});
-                } //for now disallow multiple channels (This is temporary)
-                else if (this.subscribed.length > 0) {
+                }
+                else if(this.subscribe.length > 0){
+                    //i don't think its a good idea to allow multiple sessions simultaneously.
+                    //seems confusing for an end user.
                     return;
                 }
                 else if (this.stompClient.subscribe) {
@@ -155,7 +157,7 @@
             },
 
             send(from, msg) {
-                this.stompClient.send("/app/name/" + this.subscribed[0], {},
+                this.stompClient.send("/app/name/" + this.subscribed[0].channel, {},
                     JSON.stringify({'from': from, 'text': msg}));
             },
             isCharacterKeyPress(e) {

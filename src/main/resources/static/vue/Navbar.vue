@@ -4,18 +4,20 @@
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                            data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <button id="toggle-nav" class="navbar-toggle" :class="{'collapsed' : navCollapsed}"
+                            data-toggle="collapse"
+                            data-target="#bs-example-navbar-collapse-1" :aria-expanded="!navCollapsed"
+                            @click="toggleNavCollapsed">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Websocket Demo</a>
+                    <a class="navbar-brand" href="">Websocket Demo</a>
                     <ul class="nav navbar-nav">
                         <li class="connected-navbar-message"
                             :class="{'connected':connected, 'disconnected':!connected}">
-                            <a href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}} {{subscribedText}}</a>
+                            <a @click.prevent.stop href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}} {{subscribedText}}</a>
                         </li>
                     </ul>
                 </div>
@@ -53,22 +55,25 @@
                 subscribed: [],
                 connected: false,
                 navbarDropdownIsOpen: false,
-                totalusers: 0
+                navCollapsed: true
             }
         },
         computed: {
             subscribedText() {
-                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.map(s => s.channel).toString() + ') ' + this.totalusers + " users" : '';
+                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.map(s => s.channel).toString() + ') ' : '';
             }
         },
         methods: {
             handleUnsubscribe(data) {
                 for (let i = 0; i < this.subscribed.length; i++) {
-                    if (this.subscribed[i] === data.value) {
+                    if (this.subscribed[i].channel === data.value) {
                         this.subscribed.splice(i, 1);
                         return;
                     }
                 }
+            },
+            toggleNavCollapsed(){
+                this.navCollapsed = !this.navCollapsed
             }
         },
         created() {
@@ -77,13 +82,18 @@
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('auth', (data) => this.auth = data.value);
             eventBus.$on('clearSubscribed', () => this.subscribed = []);
-            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
+//            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
         }
     }
 
 </script>
 
 <style scoped>
+
+    #toggle-nav{
+        z-index: 1000;
+    }
+
     li.disconnected a, li.connected a {
         font-weight: bold;
     }
