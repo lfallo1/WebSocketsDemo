@@ -73,7 +73,7 @@
                 if (subscription) {
                     eventBus.$emit('unsubscribe', {value: channel});
                 }
-                else if(this.subscribe.length > 0){
+                else if(this.subscribed.length > 0){
                     //i don't think its a good idea to allow multiple sessions simultaneously.
                     //seems confusing for an end user.
                     return;

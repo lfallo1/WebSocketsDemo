@@ -24,26 +24,8 @@ public class WebSocketEvents {
     @Autowired
     private SimpMessagingTemplate messageTemplate;
 
-//    private Set<String> mySet = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-
+    //store subscriber / session info
     private Map<String, Set<ChannelSubscription>> channelCount = new HashMap<>();
-
-//    @EventListener
-//    private void onSessionConnectedEvent(SessionConnectedEvent event) {
-//        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
-//
-//        //add sessionid
-//        mySet.add(sha.getSessionId());
-//    }
-//
-//    @EventListener
-//    private void onSessionDisconnectEvent(SessionDisconnectEvent event) {
-//        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
-//
-//        //remove sessionid from set & remove participant from all individual channels
-//        mySet.remove(sha.getSessionId());
-//        removeParticipantBySessionId(event);
-//    }
 
     @EventListener
     public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
@@ -68,6 +50,12 @@ public class WebSocketEvents {
         removeParticipantBySessionId(event);
     }
 
+    /**
+     * removes a participant by their subscriber id.
+     * there will only be one subscriber id
+     *
+     * @param subscriptionId
+     */
     private void removeParticipantBySubscriptionId(String subscriptionId) {
 
         for (String channel : this.channelCount.keySet()) {
@@ -87,7 +75,8 @@ public class WebSocketEvents {
     }
 
     /**
-     * remove the session id from every channel
+     * remove participants by their session id.
+     * they may be subscribed to multiple channels with the same session id, so need to check all
      *
      * @param event
      */
@@ -111,6 +100,11 @@ public class WebSocketEvents {
         }
     }
 
+    /**
+     * adds a participant
+     *
+     * @param event
+     */
     private void addParticipant(AbstractSubProtocolEvent event) {
 
         String subscriptionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SUBSCRIPTION_ID_HEADER, String.class);
