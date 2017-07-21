@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>guru.springframework</groupId>
-    <artifactId>sfg-thymeleaf-course</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>com.lancefallon</groupId>
+    <artifactId>websocket-demo</artifactId>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
 
-    <name>sfg-thymeleaf-course</name>
-    <description>Thymeleaf Course</description>
+    <name>websocket-demo</name>
+    <description>Websocket Demo</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
