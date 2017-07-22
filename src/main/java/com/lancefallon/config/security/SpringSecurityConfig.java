@@ -1,5 +1,6 @@
 package com.lancefallon.config.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -14,18 +15,26 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
+//    @Autowired
+//    private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private CustomAuthenticationProvider customAuthenticationProvider;
+
     /**
      * used to establish an authentication mechanism by allowing AuthenticationProviders to be added easily:
-     * e.g. The following defines the in-memory authentication with the in-built 'user' and 'admin' logins.
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth)
             throws Exception {
+        
+        auth.authenticationProvider(customAuthenticationProvider);
+
         //setup two authentication providers. first try the dao provider, and if that fails try the custom provider.
-        auth.inMemoryAuthentication()
-                .withUser("lfallon").password("lfallon").roles("USER", "TRANSCRIBER").and()
-                .withUser("jdoe123").password("jdoe123").roles("USER", "TRANSCRIBER").and()
-                .withUser("kara").password("kara").roles("USER", "TRANSCRIBER");
+//        auth.inMemoryAuthentication()
+//                .withUser("lfallon").password("lfallon").roles("USER", "TRANSCRIBER").and()
+//                .withUser("jdoe123").password("jdoe123").roles("USER", "TRANSCRIBER").and()
+//                .withUser("kara").password("kara").roles("USER", "TRANSCRIBER");
     }
 
     /**
