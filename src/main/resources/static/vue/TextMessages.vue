@@ -1,11 +1,22 @@
 <template>
     <div id="chat-window-container">
         <div id="chat-window" class="text-center">
+
+            <div v-if="auth.name" class="well well-sm" v-show="loggedInParticipants.length > 0">
+                <div class="channel-participant"
+                     v-for="participant in loggedInParticipants"
+                     @click="sendDirect(participant.user.name)">
+                    {{participant.user.name}}
+                    <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
+                    <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span></small>
+                </div>
+            </div>
+
             <div>
                 <li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>
             </div>
 
-            <div id="input-container" v-if="auth.name">
+            <div id="input-container" v-if="auth.name && isTranscriber">
                 <input :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
                        v-model="currentMessage"></input>
                 <button class="btn btn-primary" :disabled="subscribed.length == 0" @click="carriageReturn">Send</button>
@@ -24,7 +35,8 @@
                 <h3 v-if="auth.name">Select feed</h3>
                 <h3 v-else>Subscribe to feed</h3>
                 <div class="btn-group text-center" role="group">
-                    <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}" class="btn btn-default"
+                    <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
+                            class="btn btn-default"
                             @click="toggleSubscription(channel)" v-for="channel in channels">{{channel}}
                     </button>
                 </div>
@@ -54,47 +66,56 @@
                 auth: {},
                 transcribing: false,
                 subscribed: [],
-                channels: ['msdn', 'traffic', 'lrpu']
+                channelParticipants: [],
+                channels: ['msdn', 'traffic', 'lrpu'],
+                directChannels: []
             }
         },
         methods: {
 
             connect() {
-                var socket = new SockJS('/name');
+                var socket = new SockJS('/shared');
                 this.stompClient = Stomp.over(socket);
                 this.stompClient.connect({'X-CSRF-TOKEN': this.csrf}, (frame) => {
                     eventBus.$emit('connected', {value: true});
                     console.log('Connected: ' + frame);
+
+                    if (this.auth.name) {
+                        this.stompClient.subscribe('/topic/direct/request/' + this.auth.name, (data) => {
+                            this.directChannels.push(this.stompClient.subscribe('/topic/direct/message/' + JSON.parse(data.body).text, (data) => {
+                                console.log(data);
+                            }));
+                        });
+                    }
+
                 });
             },
 
             toggleSubscription(channel) {
-                const subscription = this.subscribed.filter(s => s.channel == channel)[0];
-                if (subscription) {
-                    eventBus.$emit('unsubscribe', {value: channel});
-                }
-                else if(this.subscribed.length > 0){
+
+                if (this.stompClient.subscribe) {
+
+
                     //i don't think its a good idea to allow multiple sessions simultaneously.
-                    //seems confusing for an end user.
-                    return;
-                }
-                else if (this.stompClient.subscribe) {
+                    if (this.subscribed.length > 0) {
+                        const currentSubscription = this.subscribed[0];
+                        eventBus.$emit('unsubscribe', {value: currentSubscription.channel});
+                    }
 
                     let subscription = {
                         endpoints: [],
                         channel: channel
                     };
 
-                    let sub = this.stompClient.subscribe('/topic/messages/' + channel, (data) => {
-                        this.showMessage(data);
+                    let sub = this.stompClient.subscribe('/topic/channelcount/' + channel, (data) => {
+                        console.log("#participants has been updated", data);
+                        let channelParticipants = JSON.parse(data.body)
+                        eventBus.$emit('channelParticipants', {value: channelParticipants});
                     });
                     subscription.endpoints.push(sub)
 
-
-                    sub = this.stompClient.subscribe('/topic/users/' + channel, (data) => {
-                        console.log("#participants has been updated", data);
-                        let sessionIds = JSON.parse(data.body)
-                        eventBus.$emit('totalusers', {value: sessionIds.length});
+                    sub = this.stompClient.subscribe('/topic/transcription/' + channel, (data) => {
+                        this.showMessage(data);
                     });
                     subscription.endpoints.push(sub)
 
@@ -116,6 +137,8 @@
                         return;
                     }
                 }
+
+                eventBus.$emit('clearChannelParticipants');
             },
 
             disconnect() {
@@ -124,6 +147,7 @@
                 }
                 eventBus.$emit('connected', {value: false});
                 eventBus.$emit('clearSubscribed');
+                eventBus.$emit('clearChannelParticipants');
             },
 
             nextCharacter(e) {
@@ -157,9 +181,34 @@
             },
 
             send(from, msg) {
-                this.stompClient.send("/app/name/" + this.subscribed[0].channel, {},
+                this.stompClient.send("/app/shared/" + this.subscribed[0].channel, {},
                     JSON.stringify({'from': from, 'text': msg}));
             },
+
+            sendDirect(username) {
+
+                if (this.auth.name && username != this.auth.name) {
+
+                    const unique = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();
+
+                    this.directChannels.push(this.stompClient.subscribe('/topic/direct/message/' + unique, (data) => {
+                        console.log(data);
+                    }));
+
+                    this.stompClient.send("/app/direct/request/" + username, {},
+                        JSON.stringify({'from': this.auth.name, 'text': unique}));
+
+                    setTimeout(() => {
+
+                        this.stompClient.send("/app/direct/message/" + unique, {},
+                            JSON.stringify({
+                                'from': this.auth.name,
+                                'text': "Hey there, " + username + ". Had a quick question?"
+                            }));
+                    }, 1000);
+                }
+            },
+
             isCharacterKeyPress(e) {
                 var keycode = e.keyCode;
 
@@ -177,6 +226,21 @@
         computed: {
             textColor() {
                 return this.color ? 'text-info' : 'text-warning'
+            },
+            loggedInParticipants() {
+                return this.channelParticipants.filter(p => p.user);
+            },
+            isTranscriber(){
+                if(!this.auth.name){
+                    return false;
+                }
+
+                for(let i = 0; i < this.channelParticipants.length; i++){
+                    if(this.channelParticipants[i].transcriber && this.channelParticipants[i].user.name == this.auth.name){
+                        return true;
+                    }
+                }
+                return false;
             }
         },
         created() {
@@ -187,6 +251,11 @@
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('clearSubscribed', () => this.subscribed = []);
             eventBus.$on('auth', (data) => this.auth = data.value);
+            eventBus.$on('channelParticipants', (data) => {
+                this.channelParticipants = data.value
+            });
+            eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
+
 
             this.csrf = config.getCsrfHeader();
             axios.get('api/user')

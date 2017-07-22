@@ -11,3 +11,6 @@
 #### interpolating thymeleaf spring variables from within vue inline components
 #### integrating vue forms in server rendered pages
 #### csrf configuration from spring -> thymeleaf -> vuejs 
+
+#### To generate git properties file use mvn clean package -DskipTests=true
+#### To build, create/push docker image: mvn clean install docker:build docker:push -Ddocker.host=unix:///var/run/docker.sock

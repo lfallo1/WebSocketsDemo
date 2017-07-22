@@ -23,8 +23,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
             throws Exception {
         //setup two authentication providers. first try the dao provider, and if that fails try the custom provider.
         auth.inMemoryAuthentication()
-                .withUser("lfallon").password("lfallon").roles("USER", "ADMIN").and()
-                .withUser("jdoe123").password("jdoe123").roles("USER");
+                .withUser("lfallon").password("lfallon").roles("USER", "TRANSCRIBER").and()
+                .withUser("jdoe123").password("jdoe123").roles("USER", "TRANSCRIBER").and()
+                .withUser("kara").password("kara").roles("USER", "TRANSCRIBER");
     }
 
     /**
@@ -37,7 +38,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 //		// @formatter:off
         http
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
-                .and().authorizeRequests().antMatchers("/", "/api/config/**", "/chat", "/topic/messages", "/chat/**", "/name", "/name/**").permitAll() //routes
+                .and().authorizeRequests().antMatchers("/", "/api/config/**", "/shared/**", "/topic/**").permitAll() //routes
                 .and().formLogin()
                 .loginPage("/login").defaultSuccessUrl("/").permitAll() //login
                 .and().authorizeRequests().anyRequest().authenticated() //require auth for other requests
@@ -45,7 +46,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .deleteCookies("remove")
                 .invalidateHttpSession(true)
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/logout-success")
+                .logoutSuccessUrl("/")
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"));
 //		// @formatter:on
     }

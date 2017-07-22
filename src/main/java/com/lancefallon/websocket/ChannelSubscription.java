@@ -1,12 +1,18 @@
 package com.lancefallon.websocket;
 
+import java.security.Principal;
+
 public class ChannelSubscription {
     private String sessionId;
     private String subscriptionId;
+    private Principal user;
+    private Boolean isTranscriber;
 
-    public ChannelSubscription(String sessionId, String subscriptionId) {
+    public ChannelSubscription(String sessionId, String subscriptionId, Principal user, Boolean isTranscriber) {
         this.sessionId = sessionId;
         this.subscriptionId = subscriptionId;
+        this.user = user;
+        this.isTranscriber = isTranscriber;
     }
 
     public String getSessionId() {
@@ -23,6 +29,22 @@ public class ChannelSubscription {
 
     public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
+    }
+
+    public Principal getUser() {
+        return user;
+    }
+
+    public void setUser(Principal user) {
+        this.user = user;
+    }
+
+    public Boolean getTranscriber() {
+        return isTranscriber;
+    }
+
+    public void setTranscriber(Boolean transcriber) {
+        isTranscriber = transcriber;
     }
 
     @Override
