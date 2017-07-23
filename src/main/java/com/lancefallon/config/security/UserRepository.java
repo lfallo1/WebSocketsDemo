@@ -1,5 +1,6 @@
 package com.lancefallon.config.security;
 
+import com.lancefallon.websocket.ChannelSubscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -27,6 +28,7 @@ public class UserRepository extends JdbcDaoSupport {
         user.setCredentialsNonExpired(true);
 //		user.setAuthenticated(true);
         user.setEnabled(rs.getBoolean("enabled"));
+
         return user;
     };
 

@@ -1,6 +1,5 @@
 package com.lancefallon.config.security;
 
-import com.lancefallon.websocket.ChannelSubscription;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -18,7 +17,6 @@ public class CustomUserDetails implements UserDetails, Serializable {
     private boolean isAccountNonLocked;
     private boolean isCredentialsNonExpired;
     private boolean isEnabled;
-    private ChannelSubscription channelSubscription;
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
@@ -87,11 +85,4 @@ public class CustomUserDetails implements UserDetails, Serializable {
         isEnabled = enabled;
     }
 
-    public ChannelSubscription getChannelSubscription() {
-        return channelSubscription;
-    }
-
-    public void setChannelSubscription(ChannelSubscription channelSubscription) {
-        this.channelSubscription = channelSubscription;
-    }
 }

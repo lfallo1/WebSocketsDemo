@@ -2,27 +2,27 @@ package com.lancefallon.domain;
 
 import com.lancefallon.config.security.CustomUserDetails;
 
-public class UserTranscribeChannel {
+public class Transcriber {
 
-    private Integer userTranscribeId;
+    private Integer transcribeId;
     private CustomUserDetails user;
     private Channel channel;
 
-    public UserTranscribeChannel() {
+    public Transcriber() {
     }
 
-    public UserTranscribeChannel(Integer userTranscribeId, CustomUserDetails user, Channel channel) {
-        this.userTranscribeId = userTranscribeId;
+    public Transcriber(Integer transcribeId, CustomUserDetails user, Channel channel) {
+        this.transcribeId = transcribeId;
         this.user = user;
         this.channel = channel;
     }
 
-    public Integer getUserTranscribeId() {
-        return userTranscribeId;
+    public Integer getTranscribeId() {
+        return transcribeId;
     }
 
-    public void setUserTranscribeId(Integer userTranscribeId) {
-        this.userTranscribeId = userTranscribeId;
+    public void setTranscribeId(Integer transcribeId) {
+        this.transcribeId = transcribeId;
     }
 
     public CustomUserDetails getUser() {

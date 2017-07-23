@@ -1,16 +1,23 @@
 package com.lancefallon.config;
 
 import com.lancefallon.config.models.GitInfo;
+import com.lancefallon.domain.Channel;
+import com.lancefallon.services.ChannelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class AppProperties {
 
+    private List<Channel> channels;
+
     @Autowired
     private GitInfo gitInfo;
 
-    public AppProperties() {
+    public AppProperties(@Autowired ChannelService channelService) {
+        this.channels = channelService.findAllWithTranscribers();
     }
 
     public GitInfo getGitInfo() {
@@ -19,5 +26,13 @@ public class AppProperties {
 
     public void setGitInfo(GitInfo gitInfo) {
         this.gitInfo = gitInfo;
+    }
+
+    public List<Channel> getChannels() {
+        return channels;
+    }
+
+    public void setChannels(List<Channel> channels) {
+        this.channels = channels;
     }
 }

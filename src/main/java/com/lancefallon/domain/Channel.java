@@ -1,9 +1,12 @@
 package com.lancefallon.domain;
 
+import java.util.List;
+
 public class Channel {
 
     private Integer channelId;
     private String name;
+    private List<Transcriber> transcribers;
 
     public Channel() {
     }
@@ -27,5 +30,13 @@ public class Channel {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Transcriber> getTranscribers() {
+        return transcribers;
+    }
+
+    public void setTranscribers(List<Transcriber> transcribers) {
+        this.transcribers = transcribers;
     }
 }

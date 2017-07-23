@@ -8,7 +8,8 @@
                      @click="sendDirect(participant.user.name)">
                     {{participant.user.name}}
                     <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
-                    <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span></small>
+                    <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
+                    </small>
                 </div>
             </div>
 
@@ -32,12 +33,21 @@
             <br>
 
             <div id="subscription-list" v-if="connected">
-                <h3 v-if="auth.name">Select feed</h3>
-                <h3 v-else>Subscribe to feed</h3>
+                <h3>Listen to feed</h3>
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
                             class="btn btn-default"
-                            @click="toggleSubscription(channel)" v-for="channel in channels">{{channel}}
+                            @click="toggleSubscription(channel, false)" v-for="channel in channels">{{channel}}
+                    </button>
+                </div>
+            </div>
+
+            <div id="transcribe-list" v-if="auth.name">
+                <h3>Listen / Transcribe to feed</h3>
+                <div class="btn-group text-center" role="group">
+                    <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
+                            class="btn btn-default"
+                            @click="toggleSubscription(channel, true)" v-for="channel in transcribeChannels">{{channel}}
                     </button>
                 </div>
             </div>
@@ -67,7 +77,8 @@
                 transcribing: false,
                 subscribed: [],
                 channelParticipants: [],
-                channels: ['msdn', 'traffic', 'lrpu'],
+                channels: [],
+                transcribeChannels: [],
                 directChannels: []
             }
         },
@@ -91,7 +102,7 @@
                 });
             },
 
-            toggleSubscription(channel) {
+            toggleSubscription(channel, shouldTranscribe) {
 
                 if (this.stompClient.subscribe) {
 
@@ -230,13 +241,13 @@
             loggedInParticipants() {
                 return this.channelParticipants.filter(p => p.user);
             },
-            isTranscriber(){
-                if(!this.auth.name){
+            isTranscriber() {
+                if (!this.auth.name) {
                     return false;
                 }
 
-                for(let i = 0; i < this.channelParticipants.length; i++){
-                    if(this.channelParticipants[i].transcriber && this.channelParticipants[i].user.name == this.auth.name){
+                for (let i = 0; i < this.channelParticipants.length; i++) {
+                    if (this.channelParticipants[i].transcriber && this.channelParticipants[i].user.name == this.auth.name) {
                         return true;
                     }
                 }
@@ -255,16 +266,22 @@
                 this.channelParticipants = data.value
             });
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
+            eventBus.$on('channels', (data) => this.channels = data.value);
+            eventBus.$on('channels_transcriber', (data) => this.transcribeChannels = data.value);
 
 
             this.csrf = config.getCsrfHeader();
             axios.get('api/user')
-                .then(res => {
-                    eventBus.$emit('auth', {value: res.data});
-                })
-                .catch(err => {
-                    console.log("Not logged in")
-                });
+                .then(res => eventBus.$emit('auth', {value: res.data}))
+                .catch(err => console.log("Not logged in"));
+
+            axios.get('api/channel')
+                .then(res => eventBus.$emit('channels', {value: res.data}))
+                .catch(err => console.log("Error loading channels"));
+
+            axios.get('api/channel/transcriber')
+                .then(res => eventBus.$emit('channels_transcriber', {value: res.data}))
+                .catch(err => console.log("Error loading transcriber channels"))
         }
     }
 </script>
