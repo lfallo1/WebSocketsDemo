@@ -8,8 +8,7 @@
                         <div class="panel-heading">Channel participants</div>
                         <div class="panel-body">
                             <div class="channel-participant"
-                                 v-for="participant in loggedInParticipants"
-                                 @click="sendDirect(participant.user.name)">
+                                 v-for="participant in loggedInParticipants">
                                 {{participant.user.name}}
                                 <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
                                 <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
