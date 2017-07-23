@@ -22,7 +22,7 @@ public class SendMessageAuthService {
         Optional<Channel> channelTranscriber = this.appProperties.getChannels().stream()
                 .filter(c -> c.getTranscribers().stream()
                         .filter(t -> t.getUser().getUsername().equals(auth.getName()))
-                        .collect(Collectors.toList()).size() > 0 && c.getName().equals(channel))
+                        .collect(Collectors.toList()).size() > 0 && String.valueOf(c.getChannelId()).equals(channel))
                 .findFirst();
 
         return channelTranscriber.isPresent();

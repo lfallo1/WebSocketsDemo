@@ -27,7 +27,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth)
             throws Exception {
-        
+
         auth.authenticationProvider(customAuthenticationProvider);
 
         //setup two authentication providers. first try the dao provider, and if that fails try the custom provider.
@@ -47,7 +47,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 //		// @formatter:off
         http
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
-                .and().authorizeRequests().antMatchers("/", "/api/config/**", "/shared/**", "/topic/**").permitAll() //routes
+                .and().authorizeRequests().antMatchers("/", "/api/config/**", "/api/channel/**", "/shared/**", "/topic/**").permitAll() //routes
                 .and().formLogin()
                 .loginPage("/login").defaultSuccessUrl("/").permitAll() //login
                 .and().authorizeRequests().anyRequest().authenticated() //require auth for other requests

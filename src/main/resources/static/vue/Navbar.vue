@@ -18,6 +18,10 @@
                         <li class="connected-navbar-message"
                             :class="{'connected':connected, 'disconnected':!connected}">
                             <a @click.prevent.stop href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}} {{subscribedText}}</a>
+                            <button class="btn btn-danger" v-if="connected" @click="disconnect"><span
+                                    class="glyphicon glyphicon-remove"></span>Disconnect
+                            </button>
+                            <button v-else class="btn btn-success" @click="connect"><span class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server</button>
                         </li>
                     </ul>
                 </div>
@@ -60,13 +64,19 @@
         },
         computed: {
             subscribedText() {
-                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.map(s => s.channel).toString() + ') ' : '';
+                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.map(s => s.channel.name).toString() + ') ' : '';
             }
         },
         methods: {
+            disconnect() {
+                eventBus.$emit('disconnect');
+            },
+            connect(){
+                eventBus.$emit('connect');
+            },
             handleUnsubscribe(data) {
                 for (let i = 0; i < this.subscribed.length; i++) {
-                    if (this.subscribed[i].channel === data.value) {
+                    if (this.subscribed[i].channel.channdlId === data.value.channelId) {
                         this.subscribed.splice(i, 1);
                         return;
                     }
@@ -105,4 +115,9 @@
     li.connected a {
         color: #449d44 !important;
     }
+
+    li.connected-navbar-message a{
+        display: inline-block;
+    }
+
 </style>

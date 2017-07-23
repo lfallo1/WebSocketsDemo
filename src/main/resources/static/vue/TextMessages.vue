@@ -1,20 +1,42 @@
 <template>
     <div id="chat-window-container">
-        <div id="chat-window" class="text-center">
+        <div id="chat-window" class="text-center container">
 
-            <div v-if="auth.name" class="well well-sm" v-show="loggedInParticipants.length > 0">
-                <div class="channel-participant"
-                     v-for="participant in loggedInParticipants"
-                     @click="sendDirect(participant.user.name)">
-                    {{participant.user.name}}
-                    <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
-                    <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
-                    </small>
+            <div id="chat-row-container" class="row">
+                <div id="chat-participants-container" class="col-md-3">
+                    <div class="panel panel-primary" v-show="loggedInParticipants.length > 0">
+                        <div class="panel-heading">Channel participants</div>
+                        <div class="panel-body">
+                            <div class="channel-participant"
+                                 v-for="participant in loggedInParticipants"
+                                 @click="sendDirect(participant.user.name)">
+                                {{participant.user.name}}
+                                <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
+                                <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
+                                </small>
+                                <hr>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="no-transcriber-warning" class="alert alert-danger text-center"
+                         v-if="subscribed.length > 0 && !hasTranscriber">
+                        <span class="glyphicon glyphicon-info-sign"></span>&nbsp;
+                        There is not currently a transcriber for this channel
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <li class="list-group-item" :class="message.textClass" v-for="message in messages">{{message.data}}</li>
+                <div class="col-md-8">
+                    <li class="list-group-item" :class="'text-' + message.textClass" v-for="message in messages">
+                        <div class="message-label pull-left">
+                            <span :class="'label label-' + message.textClass">
+                                {{message.data.channel}}&nbsp;<i>{{message.data.time}}</i>
+                            </span>
+                        </div>
+                        <div>{{message.data.value}}</div>
+                    </li>
+                    <div ref="scrollTarget"></div>
+                </div>
             </div>
 
             <div id="input-container" v-if="auth.name && isTranscriber">
@@ -22,34 +44,35 @@
                        v-model="currentMessage"></input>
                 <button class="btn btn-primary" :disabled="subscribed.length == 0" @click="carriageReturn">Send</button>
             </div>
-            <div id="current-line" :class="textColor">{{currentLine}}</div>
-
-            <button class="btn btn-danger" v-if="connected" @click="disconnect"><span
-                    class="glyphicon glyphicon-remove"></span>Disconnect
-            </button>
-            <button v-else class="btn btn-success" @click="connect"><span class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server
-            </button>
+            <div id="current-line" :class="'text-' + textColor">{{currentLine.value}}</div>
 
             <br>
 
-            <div id="subscription-list" v-if="connected">
-                <h3>Listen to feed</h3>
-                <div class="btn-group text-center" role="group">
-                    <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
-                            class="btn btn-default"
-                            @click="toggleSubscription(channel, false)" v-for="channel in channels">{{channel}}
-                    </button>
+            <div v-if="subscribed.length == 0">
+                <div id="subscription-list" v-if="connected">
+                    <h3>Listen to feed</h3>
+                    <div class="btn-group text-center" role="group">
+                        <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
+                                class="btn btn-default"
+                                @click="toggleSubscription(channel)" v-for="channel in channelsListen">{{channel.name}}
+                        </button>
+                    </div>
+                </div>
+
+                <div id="transcribe-list" v-if="auth.name && connected">
+                    <h3>Transcribe to feed</h3>
+                    <div class="btn-group text-center" role="group">
+                        <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
+                                class="btn btn-default"
+                                @click="toggleSubscription(channel)" v-for="channel in channelsTranscribe">
+                            {{channel.name}}
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div id="transcribe-list" v-if="auth.name">
-                <h3>Listen / Transcribe to feed</h3>
-                <div class="btn-group text-center" role="group">
-                    <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
-                            class="btn btn-default"
-                            @click="toggleSubscription(channel, true)" v-for="channel in transcribeChannels">{{channel}}
-                    </button>
-                </div>
+            <div v-else>
+                <button class="btn btn-danger" @click="unsubscribe">Stop listening / transcribing</button>
             </div>
 
         </div>
@@ -68,7 +91,7 @@
             return {
                 messages: [],
                 currentMessage: "",
-                currentLine: "",
+                currentLine: {value: "", channel: ""},
                 connected: false,
                 color: false,
                 stompClient: {},
@@ -78,7 +101,6 @@
                 subscribed: [],
                 channelParticipants: [],
                 channels: [],
-                transcribeChannels: [],
                 directChannels: []
             }
         },
@@ -102,6 +124,13 @@
                 });
             },
 
+            unsubscribe() {
+                if (this.subscribed.length > 0) {
+                    const currentSubscription = this.subscribed[0];
+                    eventBus.$emit('unsubscribe', {value: currentSubscription.channel});
+                }
+            },
+
             toggleSubscription(channel, shouldTranscribe) {
 
                 if (this.stompClient.subscribe) {
@@ -118,14 +147,14 @@
                         channel: channel
                     };
 
-                    let sub = this.stompClient.subscribe('/topic/channelcount/' + channel, (data) => {
+                    let sub = this.stompClient.subscribe('/topic/channelcount/' + channel.channelId, (data) => {
                         console.log("#participants has been updated", data);
                         let channelParticipants = JSON.parse(data.body)
                         eventBus.$emit('channelParticipants', {value: channelParticipants});
                     });
                     subscription.endpoints.push(sub)
 
-                    sub = this.stompClient.subscribe('/topic/transcription/' + channel, (data) => {
+                    sub = this.stompClient.subscribe('/topic/transcription/' + channel.channelId, (data) => {
                         this.showMessage(data);
                     });
                     subscription.endpoints.push(sub)
@@ -136,16 +165,16 @@
 
             handleUnsubscribe(data) {
                 const channel = data.value;
-                const subscription = this.subscribed.filter(s => s.channel == channel)[0];
+                const subscription = this.subscribed.filter(s => s.channel.channelId == channel.channelId)[0];
                 for (let i = 0; i < subscription.endpoints.length; i++) {
                     subscription.endpoints[i].unsubscribe();
                 }
 
                 for (let i = 0; i < this.subscribed.length; i++) {
 
-                    if (this.subscribed[i].channel === channel) {
+                    if (this.subscribed[i].channel.channelId === channel.channelId) {
                         this.subscribed.splice(i, 1);
-                        return;
+                        break;
                     }
                 }
 
@@ -175,25 +204,36 @@
 
                 let value = JSON.parse(data.body).text;
                 let channel = JSON.parse(data.body).channel;
+                let time = JSON.parse(data.body).time;
+                console.log("received message from channel: " + channel.toString());
                 if (value.toLowerCase() == 'enter') {
-                    this.messages.push({data: this.currentLine, textClass: this.textColor})
-                    this.currentLine = "";
-                    this.currentMessage = "";
-                    this.color = !this.color;
+                    if (this.currentLine.value) {
+                        this.currentLine.time = time;
+                        this.messages.push({data: this.currentLine, textClass: this.textColor})
+                        this.currentLine = {value: "", channel: channel.name, time: undefined};
+                        this.currentMessage = "";
+                        this.color = !this.color;
+                        this.$scrollTo(this.$refs.scrollTarget, 500)
+                    }
                 }
                 else if (value.toLowerCase() == 'backspace') {
-                    if (this.currentLine.length > 0) {
-                        this.currentLine = this.currentLine.substring(0, this.currentLine.length - 1)
+                    if (this.currentLine.value.length > 0) {
+                        this.currentLine.value = this.currentLine.value.substring(0, this.currentLine.value.length - 1)
                     }
                 } else {
-                    this.currentLine += value
+                    this.currentLine.channel = channel.name;
+                    this.currentLine.value += value;
                 }
 
             },
 
             send(from, msg) {
-                this.stompClient.send("/app/shared/" + this.subscribed[0].channel, {},
-                    JSON.stringify({'from': from, 'text': msg}));
+                const channel = {
+                    channelId: this.subscribed[0].channel.channelId,
+                    name: this.subscribed[0].channel.name
+                };
+                this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
+                    JSON.stringify({'from': from, 'text': msg, 'channel': channel}));
             },
 
             sendDirect(username) {
@@ -207,14 +247,19 @@
                     }));
 
                     this.stompClient.send("/app/direct/request/" + username, {},
-                        JSON.stringify({'from': this.auth.name, 'text': unique}));
+                        JSON.stringify({
+                            'from': this.auth.name,
+                            'text': unique,
+                            'channel': {name: username}
+                        }));
 
                     setTimeout(() => {
 
                         this.stompClient.send("/app/direct/message/" + unique, {},
                             JSON.stringify({
                                 'from': this.auth.name,
-                                'text': "Hey there, " + username + ". Had a quick question?"
+                                'text': "Hey there, " + username + ". Had a quick question?",
+                                'channel': {name: unique}
                             }));
                     }, 1000);
                 }
@@ -235,8 +280,14 @@
             }
         },
         computed: {
+            channelsListen() {
+                return this.channels.filter(c => !c.transcribers || c.transcribers.length == 0);
+            },
+            channelsTranscribe() {
+                return this.channels.filter(c => c.transcribers && c.transcribers.length > 0);
+            },
             textColor() {
-                return this.color ? 'text-info' : 'text-warning'
+                return this.color ? 'info' : 'warning'
             },
             loggedInParticipants() {
                 return this.channelParticipants.filter(p => p.user);
@@ -252,11 +303,22 @@
                     }
                 }
                 return false;
+            },
+            hasTranscriber() {
+                for (let i = 0; i < this.channelParticipants.length; i++) {
+                    if (this.channelParticipants[i].transcriber) {
+                        return true;
+                    }
+                }
+                return false;
             }
         },
         created() {
 
             //setup event bus handlers
+            eventBus.$on('connect', () => this.connect());
+            eventBus.$on('disconnect', () => this.disconnect());
+
             eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
@@ -267,8 +329,6 @@
             });
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
             eventBus.$on('channels', (data) => this.channels = data.value);
-            eventBus.$on('channels_transcriber', (data) => this.transcribeChannels = data.value);
-
 
             this.csrf = config.getCsrfHeader();
             axios.get('api/user')
@@ -276,12 +336,12 @@
                 .catch(err => console.log("Not logged in"));
 
             axios.get('api/channel')
-                .then(res => eventBus.$emit('channels', {value: res.data}))
+                .then(res => {
+                    eventBus.$emit('channels', {value: res.data})
+                })
                 .catch(err => console.log("Error loading channels"));
 
-            axios.get('api/channel/transcriber')
-                .then(res => eventBus.$emit('channels_transcriber', {value: res.data}))
-                .catch(err => console.log("Error loading transcriber channels"))
+            eventBus.$emit('connect');
         }
     }
 </script>
@@ -297,11 +357,11 @@
         font-size: 20px;
     }
 
-    #subscription-list .btn {
+    #subscription-list .btn, #transcribe-list .btn {
         color: #428bca;
     }
 
-    #subscription-list h3 {
+    #subscription-list h3, #transcribe-list h3 {
         color: #428bca;
         font-size: 20px;
         font-weight: bold;
@@ -319,14 +379,27 @@
     }
 
     #input-container button {
-        margin-left: -10px;
-        margin-top: -9px;
+        margin-left: -14px;
+        margin-top: -10px;
         font-size: 20px;
         font-weight: bold;
         height: 40px;
+        border-radius: 0px 4px 4px 0px
     }
 
     #input-container {
         margin-top: 30px;
+    }
+
+    #chat-window .message-label.pull-left span {
+        font-size: 13px;
+    }
+
+    #chat-row-container .channel-participant{
+        margin-top: -10px;
+    }
+
+    #chat-row-container .channel-participant hr{
+        margin-top: 5px;
     }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="footer">
         <div class="navbar navbar-default navbar-fixed-bottom text-center">
             <div class="container">
                 <p class="navbar-text">2017 - Jim Cosby & Lance Fallon (version: {{gitInformation.commitIdAbbrev}})</p>

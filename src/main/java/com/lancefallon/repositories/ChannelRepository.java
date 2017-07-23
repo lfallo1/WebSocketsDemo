@@ -12,9 +12,7 @@ import java.util.List;
 @Component
 public class ChannelRepository extends JdbcDaoSupport {
 
-    private static final String FIND_BY_TRANSCRIBER = "select c.* from channel c\n" +
-            "inner join user_transcribe_channel utc on c.channel_id = utc.channel_id\n" +
-            "where utc.username = ?";
+    private static final String FIND_BY_TRANSCRIBER = "select c.* from channel c inner join transcriber t on c.channel_id = t.channel_id where t.username = ?";
 
     private static final String FIND_ALL = "select * from channel";
 
@@ -34,6 +32,6 @@ public class ChannelRepository extends JdbcDaoSupport {
     }
 
     public List<Channel> findByTranscriber(String username) {
-        return this.getJdbcTemplate().query(FIND_BY_TRANSCRIBER, CHANNEL_ROW_MAPPER);
+        return this.getJdbcTemplate().query(FIND_BY_TRANSCRIBER, new Object[]{username}, CHANNEL_ROW_MAPPER);
     }
 }

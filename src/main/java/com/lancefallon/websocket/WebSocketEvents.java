@@ -1,6 +1,7 @@
 package com.lancefallon.websocket;
 
 import com.lancefallon.config.exception.UnauthorizedException;
+import com.lancefallon.services.TranscriberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -29,14 +30,14 @@ public class WebSocketEvents {
     @Autowired
     private WebSocketAuthService webSocketAuthService;
 
+    @Autowired
+    private TranscriberService transcriberService;
+
     //store subscriber / session info
     private Map<String, Set<ChannelSubscription>> channelSubscribers = new HashMap<>();
 
     @EventListener
     public void handleSessionSubscribeEvent(SessionSubscribeEvent event) throws UnauthorizedException {
-
-        System.out.println("handleSessionSubscribeEvent");
-
         if (!event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.DESTINATION_HEADER, String.class).contains("direct")) {
             //add as a participant to channel
             addParticipant(event);
@@ -45,7 +46,6 @@ public class WebSocketEvents {
 
     @EventListener
     public void handleSessionUnsubscribeEvent(SessionUnsubscribeEvent event) {
-        System.out.println("handleSessionUnsubscribeEvent");
         String subscriptionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SUBSCRIPTION_ID_HEADER, String.class);
         //remove participant from channel
         removeParticipantBySubscriptionId(subscriptionId);
@@ -53,7 +53,6 @@ public class WebSocketEvents {
 
     @EventListener
     public void handleSessionDisconnectEvent(SessionDisconnectEvent event) {
-        System.out.println("handleSessionDisconnectEvent");
         //remove participant from channels
         removeParticipantBySessionId(event);
     }
@@ -74,7 +73,7 @@ public class WebSocketEvents {
                     this.channelSubscribers.put(channel, subscriptions);
 
                     String destination = "/topic/channelcount" + channel.substring(channel.lastIndexOf("/"));
-                    System.out.println("sending to " + destination);
+                    System.out.println("##removeParticipantBySubscriptionId## sending to " + destination);
                     messageTemplate.convertAndSend(destination, subscriptions);
                     break;
                 }
@@ -100,7 +99,7 @@ public class WebSocketEvents {
                     subscriptions.remove(subscription);
                     this.channelSubscribers.put(channel, subscriptions);
 
-                    System.out.println("sending to " + destination);
+                    System.out.println("##removeParticipantBySessionId## sending to " + destination);
                     messageTemplate.convertAndSend(destination, subscriptions);
                     break;
                 }
@@ -121,8 +120,12 @@ public class WebSocketEvents {
         String destination = "/topic/channelcount" + channel.substring(channel.lastIndexOf("/"));
 
         Principal auth = event.getUser();
-        ChannelSubscription channelSubscription = new ChannelSubscription(sessionId, subscriptionId, auth, auth != null);
-        this.webSocketAuthService.authenticateSubscriber(channel, this.channelSubscribers, channelSubscription, auth);
+        Boolean isTranscriber = false;
+        if (auth != null) {
+            isTranscriber = this.transcriberService.isTranscriberOfChannel(auth, channel.substring(channel.lastIndexOf("/") + 1));
+        }
+        ChannelSubscription channelSubscription = new ChannelSubscription(sessionId, subscriptionId, auth, isTranscriber);
+//        this.webSocketAuthService.authenticateSubscriber(channel, this.channelSubscribers, channelSubscription, auth);
 
         if (this.channelSubscribers.get(channel) == null) {
             Set<ChannelSubscription> subscriptions = new HashSet<>();
@@ -133,7 +136,7 @@ public class WebSocketEvents {
             subscriptions.add(channelSubscription);
             this.channelSubscribers.put(channel, subscriptions);
         }
-        System.out.println("sending to " + destination);
+        System.out.println("##addParticipant## sending to " + destination);
         messageTemplate.convertAndSend(destination, this.channelSubscribers.get(channel));
     }
 
