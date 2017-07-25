@@ -1,7 +1,9 @@
-package com.lancefallon.websocket;
+package com.lancefallon.websocket.services;
 
 import com.lancefallon.config.exception.UnauthorizedException;
 import com.lancefallon.services.TranscriberService;
+import com.lancefallon.websocket.models.ChannelSubscription;
+import com.lancefallon.websocket.models.IsTranscriberDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -121,11 +123,18 @@ public class WebSocketEvents {
 
         Principal auth = event.getUser();
         Boolean isTranscriber = false;
+        Boolean isAuthenticatedToTranscribe = false;
         if (auth != null) {
-            isTranscriber = this.transcriberService.isTranscriberOfChannel(auth, channel.substring(channel.lastIndexOf("/") + 1));
+            IsTranscriberDto authValues = this.webSocketAuthService.authenticateSubscriber(channel, this.channelSubscribers, auth);
+
+            //this is strange, but essentially only one user can transcribe on a channel at once.
+            //if multiple users that are capable / allowed to transcribe on a channel login simultaneously, then only the one
+            //will be able to transcribe.  these helper values are used on the front to display useful message(s) to users
+            //so they understand instances where they are logged in but cannot transcribe
+            isTranscriber = authValues.getCurrentTranscriber();
+            isAuthenticatedToTranscribe = authValues.getTranscriberOfChannel();
         }
-        ChannelSubscription channelSubscription = new ChannelSubscription(sessionId, subscriptionId, auth, isTranscriber);
-//        this.webSocketAuthService.authenticateSubscriber(channel, this.channelSubscribers, channelSubscription, auth);
+        ChannelSubscription channelSubscription = new ChannelSubscription(sessionId, subscriptionId, auth, isTranscriber, isAuthenticatedToTranscribe);
 
         if (this.channelSubscribers.get(channel) == null) {
             Set<ChannelSubscription> subscriptions = new HashSet<>();

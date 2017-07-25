@@ -17,6 +17,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
     private boolean isAccountNonLocked;
     private boolean isCredentialsNonExpired;
     private boolean isEnabled;
+    private boolean isTranscribing = false;
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
@@ -85,4 +86,11 @@ public class CustomUserDetails implements UserDetails, Serializable {
         isEnabled = enabled;
     }
 
+    public boolean isTranscribing() {
+        return isTranscribing;
+    }
+
+    public void setTranscribing(boolean transcribing) {
+        isTranscribing = transcribing;
+    }
 }

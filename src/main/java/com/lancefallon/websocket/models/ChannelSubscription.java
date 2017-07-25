@@ -1,4 +1,4 @@
-package com.lancefallon.websocket;
+package com.lancefallon.websocket.models;
 
 import java.security.Principal;
 
@@ -7,12 +7,14 @@ public class ChannelSubscription {
     private String subscriptionId;
     private Principal user;
     private Boolean isTranscriber;
+    private Boolean isAuthenticatedToTranscribe;
 
-    public ChannelSubscription(String sessionId, String subscriptionId, Principal user, Boolean isTranscriber) {
+    public ChannelSubscription(String sessionId, String subscriptionId, Principal user, Boolean isTranscriber, Boolean isAuthenticatedToTranscribe) {
         this.sessionId = sessionId;
         this.subscriptionId = subscriptionId;
         this.user = user;
         this.isTranscriber = isTranscriber;
+        this.isAuthenticatedToTranscribe = isAuthenticatedToTranscribe;
     }
 
     public String getSessionId() {
@@ -45,6 +47,14 @@ public class ChannelSubscription {
 
     public void setTranscriber(Boolean transcriber) {
         isTranscriber = transcriber;
+    }
+
+    public Boolean getAuthenticatedToTranscribe() {
+        return isAuthenticatedToTranscribe;
+    }
+
+    public void setAuthenticatedToTranscribe(Boolean authenticatedToTranscribe) {
+        isAuthenticatedToTranscribe = authenticatedToTranscribe;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.lancefallon.websocket;
+package com.lancefallon.websocket.services;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;

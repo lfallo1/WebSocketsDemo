@@ -1,4 +1,4 @@
-package com.lancefallon.websocket;
+package com.lancefallon.websocket.models;
 
 import com.lancefallon.domain.Channel;
 

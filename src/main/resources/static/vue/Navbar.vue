@@ -51,6 +51,7 @@
 <script>
 
     import {eventBus} from './main.js';
+    import config from './config.js';
 
     export default {
         data() {
@@ -64,10 +65,13 @@
         },
         computed: {
             subscribedText() {
-                return this.subscribed.length > 0 ? '(Listening on ' + this.subscribed.map(s => s.channel.name).toString() + ') ' : '';
+                //they will have multiple subscriptions on same channel. so get unique list for display purposes
+                const arr = config.unique(this.subscribed);
+                return this.subscribed.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ') ' : '';
             }
         },
         methods: {
+            //extract to util file
             disconnect() {
                 eventBus.$emit('disconnect');
             },
@@ -91,7 +95,7 @@
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('auth', (data) => this.auth = data.value);
-            eventBus.$on('clearSubscribed', () => this.subscribed = []);
+            eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
 //            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
         }
     }

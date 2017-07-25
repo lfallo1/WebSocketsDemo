@@ -1,5 +1,6 @@
 package com.lancefallon.websocket;
 
+import com.lancefallon.websocket.services.WebSocketSendMessageInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

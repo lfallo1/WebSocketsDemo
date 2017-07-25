@@ -1,6 +1,5 @@
 package com.lancefallon.config.security;
 
-import com.lancefallon.websocket.ChannelSubscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;

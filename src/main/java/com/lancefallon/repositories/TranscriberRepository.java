@@ -40,9 +40,9 @@ public class TranscriberRepository extends JdbcDaoSupport {
     }
 
     public List<Transcriber> findByChannel(Integer channelId) {
-        try{
-            return this.getJdbcTemplate().query("select * from transcriber where channel_id = ? limit 1", new Object[]{channelId}, USER_TRANSCRIBE_ROW_MAPPER);
-        } catch(DataAccessException e){
+        try {
+            return this.getJdbcTemplate().query("select * from transcriber where channel_id = ?", new Object[]{channelId}, USER_TRANSCRIBE_ROW_MAPPER);
+        } catch (DataAccessException e) {
             e.printStackTrace();
             return null;
         }

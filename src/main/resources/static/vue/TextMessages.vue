@@ -11,7 +11,8 @@
                                  v-for="participant in loggedInParticipants">
                                 {{participant.user.name}}
                                 <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
-                                <small v-if="participant.transcriber"><span class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
+                                <small v-if="participant.transcriber"><span
+                                        class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
                                 </small>
                                 <hr>
                             </div>
@@ -23,16 +24,23 @@
                         <span class="glyphicon glyphicon-info-sign"></span>&nbsp;
                         There is not currently a transcriber for this channel
                     </div>
+
+                    <div id="already-subscriber-warning" class="alert alert-warning text-center"
+                         v-if="subscribed.length > 0 && otherTranscriberExists">
+                        <span class="glyphicon glyphicon-info-sign">&nbsp;</span>
+                        A logged in user is already transcribing on this channel. You will be able to listen, but not transcribe
+                    </div>
                 </div>
 
                 <div class="col-md-8">
-                    <li class="list-group-item" :class="'text-' + message.textClass" v-for="message in messages">
-                        <div class="message-label pull-left">
-                            <span :class="'label label-' + message.textClass">
-                                {{message.data.channel}}&nbsp;<i>{{message.data.time}}</i>
-                            </span>
+                    <li class="chat-list-item list-group-item" :class="'text-' + message.textClass"
+                        v-for="message in messages">
+                        <div class="message-label">
+                            <small :class="'text-' + message.textClass">
+                                {{message.data.channel}}&nbsp;{{message.data.time}} - {{message.data.author}}
+                            </small>
+                            <div class="chat-list-item-message-text">{{message.data.value}}</div>
                         </div>
-                        <div>{{message.data.value}}</div>
                     </li>
                     <div ref="scrollTarget"></div>
                 </div>
@@ -41,7 +49,9 @@
             <div id="input-container" v-if="auth.name && isTranscriber">
                 <input :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
                        v-model="currentMessage"></input>
-                <button class="btn btn-primary" :disabled="subscribed.length == 0" @click="carriageReturn">Send</button>
+                <button :class="'btn btn-' + textColor" :disabled="subscribed.length == 0" @click="carriageReturn">
+                    Send
+                </button>
             </div>
             <div id="current-line" :class="'text-' + textColor">{{currentLine.value}}</div>
 
@@ -176,7 +186,7 @@
                         break;
                     }
                 }
-
+                eventBus.$emit('updateSubscribed', {value: []});
                 eventBus.$emit('clearChannelParticipants');
             },
 
@@ -185,7 +195,7 @@
                     this.stompClient.disconnect();
                 }
                 eventBus.$emit('connected', {value: false});
-                eventBus.$emit('clearSubscribed');
+                eventBus.$emit('updateSubscribed', {value: []});
                 eventBus.$emit('clearChannelParticipants');
             },
 
@@ -200,16 +210,18 @@
             },
 
             showMessage(data) {
-
+                let author = JSON.parse(data.body).from;
                 let value = JSON.parse(data.body).text;
                 let channel = JSON.parse(data.body).channel;
                 let time = JSON.parse(data.body).time;
                 console.log("received message from channel: " + channel.toString());
                 if (value.toLowerCase() == 'enter') {
                     if (this.currentLine.value) {
+                        this.currentLine.channel = channel.name;
                         this.currentLine.time = time;
+                        this.currentLine.author = author;
                         this.messages.push({data: this.currentLine, textClass: this.textColor})
-                        this.currentLine = {value: "", channel: channel.name, time: undefined};
+                        this.currentLine = {value: "", channel: "", author: "", time: undefined};
                         this.currentMessage = "";
                         this.color = !this.color;
                         this.$scrollTo(this.$refs.scrollTarget, 500)
@@ -220,7 +232,6 @@
                         this.currentLine.value = this.currentLine.value.substring(0, this.currentLine.value.length - 1)
                     }
                 } else {
-                    this.currentLine.channel = channel.name;
                     this.currentLine.value += value;
                 }
 
@@ -310,6 +321,18 @@
                     }
                 }
                 return false;
+            },
+            otherTranscriberExists() {
+                if (this.auth.name && this.hasTranscriber) {
+                    for (let i = 0; i < this.channelParticipants.length; i++) {
+                        if (this.channelParticipants[i].user && this.channelParticipants[i].user.name == this.auth.name
+                            && this.channelParticipants[i].authenticatedToTranscribe
+                            && !this.channelParticipants[i].transcriber) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         },
         created() {
@@ -321,7 +344,7 @@
             eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
-            eventBus.$on('clearSubscribed', () => this.subscribed = []);
+            eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
             eventBus.$on('auth', (data) => this.auth = data.value);
             eventBus.$on('channelParticipants', (data) => {
                 this.channelParticipants = data.value
@@ -394,11 +417,33 @@
         font-size: 13px;
     }
 
-    #chat-row-container .channel-participant{
+    #chat-row-container .channel-participant {
         margin-top: -10px;
     }
 
-    #chat-row-container .channel-participant hr{
+    #chat-row-container .channel-participant hr {
         margin-top: 5px;
+    }
+
+    .chat-list-item {
+        text-align: left;
+    }
+
+    .chat-list-item small {
+        font-size: 12px;
+        opacity: 0.65;
+    }
+
+    li.chat-list-item {
+        padding: 2px 8px 2px 8px;
+    }
+
+    .chat-list-item-message-text {
+        margin-top: -7px;
+        font-weight: bold;
+    }
+
+    #chat-window input:focus {
+        outline-width: 0;
     }
 </style>
