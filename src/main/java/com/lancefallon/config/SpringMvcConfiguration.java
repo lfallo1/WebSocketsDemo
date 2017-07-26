@@ -88,6 +88,7 @@ public class SpringMvcConfiguration extends WebMvcConfigurerAdapter {
 
     @Bean(name = "dataSource")
     public DriverManagerDataSource dataSource() {
+        System.out.println(String.format("### CONNECTING TO %s using %s:%s ", url, username, password));
         DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
         driverManagerDataSource.setDriverClassName(this.driver);
         driverManagerDataSource.setUrl(this.url);
