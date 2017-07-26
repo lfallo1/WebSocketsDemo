@@ -1,6 +1,7 @@
 package com.lancefallon.config;
 
 import com.lancefallon.config.interceptors.LoginPageInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -17,6 +18,18 @@ import java.util.Locale;
 
 @Configuration
 public class SpringMvcConfiguration extends WebMvcConfigurerAdapter {
+
+    @Value("${jdbc.driver}")
+    private String driver;
+
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Value("${jdbc.username}")
+    private String username;
+
+    @Value("${jdbc.password}")
+    private String password;
 
     @Bean
     public LoginPageInterceptor loginPageInterceptor() {
@@ -76,10 +89,10 @@ public class SpringMvcConfiguration extends WebMvcConfigurerAdapter {
     @Bean(name = "dataSource")
     public DriverManagerDataSource dataSource() {
         DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
-        driverManagerDataSource.setDriverClassName("org.postgresql.Driver");
-        driverManagerDataSource.setUrl("jdbc:postgresql://localhost:5432/TranscribeDb");
-        driverManagerDataSource.setUsername("postgres");
-        driverManagerDataSource.setPassword("admin");
+        driverManagerDataSource.setDriverClassName(this.driver);
+        driverManagerDataSource.setUrl(this.url);
+        driverManagerDataSource.setUsername(this.username);
+        driverManagerDataSource.setPassword(this.password);
         return driverManagerDataSource;
     }
 
