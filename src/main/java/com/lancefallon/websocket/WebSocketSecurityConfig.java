@@ -1,8 +1,6 @@
 package com.lancefallon.websocket;
 
-import com.lancefallon.websocket.services.WebSocketSendMessageInterceptor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
 import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
@@ -37,11 +35,6 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/shared", "/channelcount", "/direct");
         registry.addEndpoint("/shared", "/channelcount", "/direct").withSockJS();
-    }
-
-    @Override
-    public void customizeClientInboundChannel(ChannelRegistration registration) {
-        registration.setInterceptors(new WebSocketSendMessageInterceptor());
     }
 
 }

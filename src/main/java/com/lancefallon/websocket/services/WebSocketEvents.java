@@ -1,7 +1,6 @@
 package com.lancefallon.websocket.services;
 
 import com.lancefallon.config.exception.UnauthorizedException;
-import com.lancefallon.services.TranscriberService;
 import com.lancefallon.websocket.models.ChannelSubscription;
 import com.lancefallon.websocket.models.IsTranscriberDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,6 @@ public class WebSocketEvents {
 
     @Autowired
     private WebSocketAuthService webSocketAuthService;
-
-    @Autowired
-    private TranscriberService transcriberService;
 
     //store subscriber / session info
     private Map<String, Set<ChannelSubscription>> channelSubscribers = new HashMap<>();
