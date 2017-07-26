@@ -4,17 +4,31 @@ import com.lancefallon.config.models.GitInfo;
 import com.lancefallon.domain.Channel;
 import com.lancefallon.services.ChannelService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-@Component
+@Configuration
 public class AppProperties {
 
     private List<Channel> channels;
 
     @Autowired
     private GitInfo gitInfo;
+
+    @Value("${jdbc.driver}")
+    private String driver;
+
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Value("${jdbc.username}")
+    private String username;
+
+    @Value("${jdbc.password}")
+    private String password;
+
 
     public AppProperties(@Autowired ChannelService channelService) {
         this.channels = channelService.findAllWithTranscribers();

@@ -2,12 +2,17 @@
 -- PostgreSQL database dump
 --
 
+-- Dumped from database version 9.6.3
+-- Dumped by pg_dump version 9.6.3
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
+SET row_security = off;
 
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
@@ -30,24 +35,22 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: author; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: channel; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE author (
-    id bigint NOT NULL,
-    first_name text,
-    last_name text,
-    image text
+CREATE TABLE channel (
+    channel_id bigint NOT NULL,
+    name character varying(45) NOT NULL
 );
 
 
-ALTER TABLE public.author OWNER TO postgres;
+ALTER TABLE channel OWNER TO postgres;
 
 --
--- Name: author_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: channel_channel_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE author_id_seq
+CREATE SEQUENCE channel_channel_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -55,119 +58,27 @@ CREATE SEQUENCE author_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.author_id_seq OWNER TO postgres;
+ALTER TABLE channel_channel_id_seq OWNER TO postgres;
 
 --
--- Name: author_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: channel_channel_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE author_id_seq OWNED BY author.id;
+ALTER SEQUENCE channel_channel_id_seq OWNED BY channel.channel_id;
 
 
 --
--- Name: category; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: transcriber; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE category (
-    id bigint NOT NULL,
-    category text NOT NULL
+CREATE TABLE transcriber (
+    transcriber_id bigint NOT NULL,
+    username character varying(45) NOT NULL,
+    channel_id integer NOT NULL
 );
 
 
-ALTER TABLE public.category OWNER TO postgres;
-
---
--- Name: product; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
---
-
-CREATE TABLE product (
-    id bigint NOT NULL,
-    course_description text,
-    price double precision,
-    image_url text,
-    course_subtitle text,
-    course_name text,
-    author_id bigint
-);
-
-
-ALTER TABLE public.product OWNER TO postgres;
-
---
--- Name: product_category; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
---
-
-CREATE TABLE product_category (
-    id bigint NOT NULL,
-    product_id bigint NOT NULL,
-    category_id bigint NOT NULL
-);
-
-
-ALTER TABLE public.product_category OWNER TO postgres;
-
---
--- Name: product_category_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE product_category_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.product_category_id_seq OWNER TO postgres;
-
---
--- Name: product_category_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE product_category_id_seq OWNED BY category.id;
-
-
---
--- Name: product_category_id_seq1; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE product_category_id_seq1
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.product_category_id_seq1 OWNER TO postgres;
-
---
--- Name: product_category_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE product_category_id_seq1 OWNED BY product_category.id;
-
-
---
--- Name: products_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE products_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.products_id_seq OWNER TO postgres;
-
---
--- Name: products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE products_id_seq OWNED BY product.id;
-
+ALTER TABLE transcriber OWNER TO postgres;
 
 --
 -- Name: user_roles_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -181,10 +92,10 @@ CREATE SEQUENCE user_roles_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_roles_seq OWNER TO postgres;
+ALTER TABLE user_roles_seq OWNER TO postgres;
 
 --
--- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE user_roles (
@@ -194,117 +105,84 @@ CREATE TABLE user_roles (
 );
 
 
-ALTER TABLE public.user_roles OWNER TO postgres;
+ALTER TABLE user_roles OWNER TO postgres;
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_transcribe_channel_user_transcribe_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE user_transcribe_channel_user_transcribe_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE user_transcribe_channel_user_transcribe_id_seq OWNER TO postgres;
+
+--
+-- Name: user_transcribe_channel_user_transcribe_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE user_transcribe_channel_user_transcribe_id_seq OWNED BY transcriber.transcriber_id;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE users (
     username character varying(45) NOT NULL,
     password character varying(255) NOT NULL,
-    enabled boolean DEFAULT true NOT NULL,
-    is_using_2fa boolean DEFAULT false,
-    secret text
+    enabled smallint DEFAULT 1 NOT NULL
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE users OWNER TO postgres;
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: channel channel_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY author ALTER COLUMN id SET DEFAULT nextval('author_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY category ALTER COLUMN id SET DEFAULT nextval('product_category_id_seq'::regclass);
+ALTER TABLE ONLY channel ALTER COLUMN channel_id SET DEFAULT nextval('channel_channel_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: transcriber transcriber_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY product ALTER COLUMN id SET DEFAULT nextval('products_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY product_category ALTER COLUMN id SET DEFAULT nextval('product_category_id_seq1'::regclass);
+ALTER TABLE ONLY transcriber ALTER COLUMN transcriber_id SET DEFAULT nextval('user_transcribe_channel_user_transcribe_id_seq'::regclass);
 
 
 --
--- Data for Name: author; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: channel; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY author (id, first_name, last_name, image) FROM stdin;
-1	lance	fallon	user.png
+COPY channel (channel_id, name) FROM stdin;
+1	msdn
+2	traffic
+3	lrpu
 \.
 
 
 --
--- Name: author_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: channel_channel_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('author_id_seq', 1, true);
+SELECT pg_catalog.setval('channel_channel_id_seq', 3, true);
 
 
 --
--- Data for Name: category; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: transcriber; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY category (id, category) FROM stdin;
-1	Spring Beginner
-2	Spring Advanced
+COPY transcriber (transcriber_id, username, channel_id) FROM stdin;
+1	transcriber_lrpu	3
+2	transcriber_msdn	1
+3	transcriber_traffic	2
+4	test	1
 \.
-
-
---
--- Data for Name: product; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY product (id, course_description, price, image_url, course_subtitle, course_name, author_id) FROM stdin;
-1	Why do you want to learn about the Spring Framework? Simple, Spring is the most widely used framework in the enterprise today. Major companies all over the world are hiring programmers who know the Spring Framework	19.989999999999998	SpringIntroThumb.png	Learn Spring	Spring Bootcamp Course	1
-2	Why would you want to learn about the Spring Framework? Simple, Spring is the most 	38.219999999999999	SpringCoreUltimateThumb.png	Ultimate Bundle of Spring Core!	Spring Core Ultimate	1
-\.
-
-
---
--- Data for Name: product_category; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY product_category (id, product_id, category_id) FROM stdin;
-1	1	1
-2	2	1
-3	2	2
-\.
-
-
---
--- Name: product_category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('product_category_id_seq', 2, true);
-
-
---
--- Name: product_category_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('product_category_id_seq1', 3, true);
-
-
---
--- Name: products_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('products_id_seq', 2, true);
 
 
 --
@@ -312,10 +190,10 @@ SELECT pg_catalog.setval('products_id_seq', 2, true);
 --
 
 COPY user_roles (user_role_id, username, role) FROM stdin;
-1	lfallon	ROLE_USER
-2	lfallon	ROLE_ADMIN
-3	lfallon	ROLE_SUPERHERO
-4	naveen	ROLE_USER
+1	transcriber_msdn	ROLE_TRANSCRIBER
+2	transcriber_traffic	ROLE_TRANSCRIBER
+3	transcriber_lrpu	ROLE_TRANSCRIBER
+4	test	ROLE_TRANSCRIBER
 \.
 
 
@@ -327,49 +205,34 @@ SELECT pg_catalog.setval('user_roles_seq', 4, true);
 
 
 --
+-- Name: user_transcribe_channel_user_transcribe_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('user_transcribe_channel_user_transcribe_id_seq', 4, true);
+
+
+--
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY users (username, password, enabled, is_using_2fa, secret) FROM stdin;
-naveen	$2a$11$m6msisz9e2MUrFurBGTSxuDSfiSTC.HJ4Ckt.jSGnblJSDIfb9Sb2	t	f	\N
-lfallon	$2a$11$6hX5vAW6Kv452YYzP7KLv.gKj8aNcwJbq9PrVYreAEgomh9BDy9VC	t	t	secret
+COPY users (username, password, enabled) FROM stdin;
+transcriber_msdn	$2a$10$/BPbiwTq4ljnD0GPBOW7juUwwl8yQSEBbYwsF4cAW1eoOp8yogILC	1
+transcriber_traffic	$2a$10$.qXl8BXAb3u9L7TdJDY9u.DEmgLtxmhbzR7NI0J9X.UY3gmUTWxSC	1
+transcriber_lrpu	$2a$10$TjykuOlzEP8BJT1Ei1yLu.tV0u61cMVjuuRx4QAMVpjt29ZCHcWJK	1
+test	$2a$10$JEU3TgaOTx3fW4xGmRzGgeOJ64WW2A1nru.FDg6CL.FZ9V6hFqgdC	1
 \.
 
 
 --
--- Name: author_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: channel channel_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY author
-    ADD CONSTRAINT author_pk PRIMARY KEY (id);
-
-
---
--- Name: category_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY category
-    ADD CONSTRAINT category_pk PRIMARY KEY (id);
+ALTER TABLE ONLY channel
+    ADD CONSTRAINT channel_pkey PRIMARY KEY (channel_id);
 
 
 --
--- Name: productcategory_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY product_category
-    ADD CONSTRAINT productcategory_pk PRIMARY KEY (id);
-
-
---
--- Name: products_pk; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY product
-    ADD CONSTRAINT products_pk PRIMARY KEY (id);
-
-
---
--- Name: uni_username_role; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_roles uni_username_role; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY user_roles
@@ -377,7 +240,7 @@ ALTER TABLE ONLY user_roles
 
 
 --
--- Name: user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY user_roles
@@ -385,7 +248,15 @@ ALTER TABLE ONLY user_roles
 
 
 --
--- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: transcriber user_transcribe_channel_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcriber
+    ADD CONSTRAINT user_transcribe_channel_pkey PRIMARY KEY (transcriber_id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY users
@@ -393,52 +264,34 @@ ALTER TABLE ONLY users
 
 
 --
--- Name: fk_username_idx; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
+-- Name: fk_username_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX fk_username_idx ON user_roles USING btree (username);
 
 
 --
--- Name: fk_username; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: transcriber fk_user_transcribe_channel_channel; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcriber
+    ADD CONSTRAINT fk_user_transcribe_channel_channel FOREIGN KEY (channel_id) REFERENCES channel(channel_id);
+
+
+--
+-- Name: transcriber fk_user_transcribe_channel_username; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transcriber
+    ADD CONSTRAINT fk_user_transcribe_channel_username FOREIGN KEY (username) REFERENCES users(username);
+
+
+--
+-- Name: user_roles fk_username; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY user_roles
     ADD CONSTRAINT fk_username FOREIGN KEY (username) REFERENCES users(username);
-
-
---
--- Name: product_author_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY product
-    ADD CONSTRAINT product_author_fk FOREIGN KEY (author_id) REFERENCES author(id);
-
-
---
--- Name: product_category_category_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY product_category
-    ADD CONSTRAINT product_category_category_fk FOREIGN KEY (category_id) REFERENCES category(id);
-
-
---
--- Name: product_category_product_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY product_category
-    ADD CONSTRAINT product_category_product_fk FOREIGN KEY (product_id) REFERENCES product(id);
-
-
---
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 --

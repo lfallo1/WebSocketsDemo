@@ -5,5 +5,20 @@ services:
     restart: always
     ports:
       - "8082:8080"
+    links:
+      - postgres:postgres
+    depends_on:
+      - postgres
     environment:
       SPRING_PROFILES_ACTIVE: prod
+   postgres:
+    image: postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: production_secret
+      POSTGRES_DB: TranscribeDb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
