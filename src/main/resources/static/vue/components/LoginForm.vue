@@ -32,9 +32,9 @@
 
 <script>
 
-    import config from './config.js';
+    import config from '../config.js';
     import axios from 'axios';
-    import {eventBus} from './main.js';
+    import {eventBus} from '../main.js';
 
     export default {
         data() {

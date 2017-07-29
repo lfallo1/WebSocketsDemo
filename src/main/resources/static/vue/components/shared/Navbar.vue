@@ -50,8 +50,8 @@
 
 <script>
 
-    import {eventBus} from './main.js';
-    import config from './config.js';
+    import {eventBus} from '../../main.js';
+    import config from '../../config.js';
 
     export default {
         data() {

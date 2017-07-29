@@ -1,9 +1,9 @@
 import Vue from "vue";
 import VueScrollTo from 'vue-scrollto';
-import TextMessages from "./TextMessages.vue";
-import Navbar from "./Navbar.vue";
-import Footer from "./Footer.vue";
-import LoginForm from "./LoginForm.vue";
+import TextMessages from "./components/TextMessages.vue";
+import LoginForm from "./components/LoginForm.vue";
+import Navbar from "./components/shared/Navbar.vue";
+import Footer from "./components/shared/Footer.vue";
 import config from './config.js';
 
 Vue.use(VueScrollTo);
