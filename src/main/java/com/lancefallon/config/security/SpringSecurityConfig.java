@@ -15,8 +15,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
-//    @Autowired
-//    private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private RestAuthenticationEntryPoint authenticationEntryPoint;
+    @Autowired
+    private RestAuthenticationFailureHandler authenticationFailureHandler;
+    @Autowired
+    private RestAuthenticationSuccessHandler authenticationSuccessHandler;
 
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
@@ -29,12 +33,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
             throws Exception {
 
         auth.authenticationProvider(customAuthenticationProvider);
-
-        //setup two authentication providers. first try the dao provider, and if that fails try the custom provider.
-//        auth.inMemoryAuthentication()
-//                .withUser("lfallon").password("lfallon").roles("USER", "TRANSCRIBER").and()
-//                .withUser("jdoe123").password("jdoe123").roles("USER", "TRANSCRIBER").and()
-//                .withUser("kara").password("kara").roles("USER", "TRANSCRIBER");
     }
 
     /**
@@ -57,6 +55,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"));
+
+        http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+        http.formLogin().successHandler(authenticationSuccessHandler);
+        http.formLogin().failureHandler(authenticationFailureHandler);
+
 //		// @formatter:on
     }
 
