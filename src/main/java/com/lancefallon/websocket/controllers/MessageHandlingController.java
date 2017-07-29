@@ -29,21 +29,21 @@ public class MessageHandlingController {
     @PreAuthorize("@webSocketAuthService.validateCanSend(#auth, #channel)")
     public OutputMessage send(Principal auth, MessageHeaderAccessor header, @DestinationVariable String channel, WebsocketMessage websocketMessage) throws AccessDeniedException {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
-        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel());
+        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
     }
 
     @MessageMapping("/direct/request/{username}")
     @SendTo("/topic/direct/request/{username}")
     public OutputMessage requestDirect(@DestinationVariable String username, WebsocketMessage websocketMessage) throws AccessDeniedException {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
-        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel());
+        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
     }
 
     @MessageMapping("/direct/message/{uniqueChannel}")
     @SendTo("/topic/direct/message/{uniqueChannel}")
     public OutputMessage sendDirect(@DestinationVariable String uniqueChannel, WebsocketMessage websocketMessage) throws AccessDeniedException {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
-        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel());
+        return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
     }
 
     @MessageExceptionHandler

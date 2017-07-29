@@ -37,7 +37,7 @@
                         v-for="message in messages">
                         <div class="message-label">
                             <small :class="'text-' + message.textClass">
-                                {{message.data.channel}}&nbsp;{{message.data.time}} - {{message.data.author}}
+                                {{message.data.channel}}&nbsp;{{message.data.time}}
                             </small>
                             <div class="chat-list-item-message-text">{{message.data.value}}</div>
                         </div>
@@ -46,14 +46,15 @@
                 </div>
             </div>
 
-            <div id="input-container" v-if="auth.name && isTranscriber">
-                <input :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
+            <div id="input-container" class="input-group" v-if="auth.name && isTranscriber">
+                <span id="toggle-color-button" class="input-group-addon" @click="toggleColor"><span
+                        class="glyphicon glyphicon-retweet"></span>&nbsp;Change sender</span>
+                <input class="form-control" :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
                        v-model="currentMessage"></input>
-                <button :class="'btn btn-' + textColor" :disabled="subscribed.length == 0" @click="carriageReturn">
-                    Send
-                </button>
+                <span id="send-button" :class="'input-group-addon btn bg-' + textColor"
+                      :disabled="subscribed.length == 0" @click="carriageReturn">Send</span>
             </div>
-            <div id="current-line" :class="'text-' + textColor">{{currentLine.value}}</div>
+            <div id="current-line" :class="'text-' + currentLine.color">{{currentLine.value}}</div>
 
             <br>
 
@@ -100,7 +101,7 @@
             return {
                 messages: [],
                 currentMessage: "",
-                currentLine: {value: "", channel: ""},
+                currentLine: {value: "", channel: "", color: ""},
                 connected: false,
                 color: false,
                 stompClient: {},
@@ -212,6 +213,7 @@
             showMessage(data) {
                 let author = JSON.parse(data.body).from;
                 let value = JSON.parse(data.body).text;
+                let color = JSON.parse(data.body).color;
                 let channel = JSON.parse(data.body).channel;
                 let time = JSON.parse(data.body).time;
                 console.log("received message from channel: " + channel.toString());
@@ -220,18 +222,20 @@
                         this.currentLine.channel = channel.name;
                         this.currentLine.time = time;
                         this.currentLine.author = author;
-                        this.messages.push({data: this.currentLine, textClass: this.textColor})
+                        this.messages.push({data: this.currentLine, textClass: color})
                         this.currentLine = {value: "", channel: "", author: "", time: undefined};
                         this.currentMessage = "";
-                        this.color = !this.color;
                         this.$scrollTo(this.$refs.scrollTarget, 500)
                     }
+                    eventBus.$emit('toggleColor', {value: !this.color});
                 }
                 else if (value.toLowerCase() == 'backspace') {
                     if (this.currentLine.value.length > 0) {
+                        this.currentLine.color = color;
                         this.currentLine.value = this.currentLine.value.substring(0, this.currentLine.value.length - 1)
                     }
                 } else {
+                    this.currentLine.color = color;
                     this.currentLine.value += value;
                 }
 
@@ -243,7 +247,7 @@
                     name: this.subscribed[0].channel.name
                 };
                 this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
-                    JSON.stringify({'from': from, 'text': msg, 'channel': channel}));
+                    JSON.stringify({'from': from, 'text': msg, 'channel': channel, 'color': this.textColor}));
             },
 
             sendDirect(username) {
@@ -287,6 +291,9 @@
                     (keycode > 218 && keycode < 223);   // [\]' (in order)
 
                 return valid;
+            },
+            toggleColor() {
+                eventBus.$emit('toggleColor', {value: !this.color});
             }
         },
         computed: {
@@ -351,6 +358,9 @@
             });
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
             eventBus.$on('channels', (data) => this.channels = data.value);
+            eventBus.$on('toggleColor', (data) => {
+                this.color = data.value
+            });
 
             this.csrf = config.getCsrfHeader();
             axios.get('api/user')
@@ -390,7 +400,6 @@
     }
 
     #chat-window input {
-        width: 75%;
         height: 40px;
         border-radius: 4px;
         border: 1px solid rgba(0, 0, 0, 0.3);
@@ -398,19 +407,6 @@
         font-size: 26px;
         padding-left: 10px;
         font-weight: bold;
-    }
-
-    #input-container button {
-        margin-left: -14px;
-        margin-top: -10px;
-        font-size: 20px;
-        font-weight: bold;
-        height: 40px;
-        border-radius: 0px 4px 4px 0px
-    }
-
-    #input-container {
-        margin-top: 30px;
     }
 
     #chat-window .message-label.pull-left span {
@@ -445,5 +441,29 @@
 
     #chat-window input:focus {
         outline-width: 0;
+    }
+
+    #toggle-color-button.input-group-addon:hover {
+        cursor: pointer;
+        background: #555;
+        color: #eee;
+    }
+
+    .bg-info {
+        background: #00aedb;
+        color: white;
+        border: none;
+    }
+
+    .bg-warning {
+        background: #f37735;
+        color: white;
+        border: none;
+    }
+
+    #input-container{
+        width: 75%;
+        margin: 0px auto;
+        margin-top: 25px;
     }
 </style>

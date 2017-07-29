@@ -8,6 +8,7 @@ import com.lancefallon.domain.Channel;
 public class WebsocketMessage {
     private String from;
     private String text;
+    private String color;
     private Channel channel;
 
     public WebsocketMessage() {
@@ -35,5 +36,9 @@ public class WebsocketMessage {
 
     public void setChannel(Channel channel) {
         this.channel = channel;
+    }
+
+    public String getColor() {
+        return color;
     }
 }

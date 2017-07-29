@@ -10,13 +10,15 @@ public class OutputMessage {
     private Channel channel;
     private String text;
     private String time;
+    private String color;
 
-    public OutputMessage(final String from, final String text, final String time, final Channel channel) {
+    public OutputMessage(final String from, final String text, final String time, final Channel channel, final String color) {
 
         this.from = from;
         this.channel = channel;
         this.text = text;
         this.time = time;
+        this.color = color;
     }
 
     public Channel getChannel() {
@@ -37,5 +39,9 @@ public class OutputMessage {
 
     public String getFrom() {
         return from;
+    }
+
+    public String getColor() {
+        return color;
     }
 }
