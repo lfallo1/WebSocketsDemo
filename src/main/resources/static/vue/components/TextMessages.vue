@@ -14,44 +14,11 @@
                 </div>
             </div>
 
-            <div id="input-container" class="input-group" v-if="auth.name && isTranscriber">
-                <span id="toggle-color-button" class="input-group-addon" @click="toggleColor"><span
-                        class="glyphicon glyphicon-retweet"></span>&nbsp;Change sender</span>
-                <input class="form-control" :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
-                       v-model="currentMessage"></input>
-                <span id="send-button" :class="'input-group-addon btn bg-' + textColor"
-                      :disabled="subscribed.length == 0" @click="carriageReturn">Send</span>
-            </div>
-            <div id="current-line" :class="'text-' + currentLine.color">{{currentLine.value}}</div>
+            <app-textmessage-input></app-textmessage-input>
 
             <br>
 
-            <div v-if="subscribed.length == 0">
-                <div id="subscription-list" v-if="connected">
-                    <h3>Listen to feed</h3>
-                    <div class="btn-group text-center" role="group">
-                        <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
-                                class="btn btn-default"
-                                @click="toggleSubscription(channel)" v-for="channel in channelsListen">{{channel.name}}
-                        </button>
-                    </div>
-                </div>
-
-                <div id="transcribe-list" v-if="auth.name && connected">
-                    <h3>Transcribe to feed</h3>
-                    <div class="btn-group text-center" role="group">
-                        <button :class="{'active' : subscribed.filter(s=>s.channel == channel).length > 0}"
-                                class="btn btn-default"
-                                @click="toggleSubscription(channel)" v-for="channel in channelsTranscribe">
-                            {{channel.name}}
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else>
-                <button class="btn btn-danger" @click="unsubscribe">Stop listening / transcribing</button>
-            </div>
+            <app-channellist></app-channellist>
 
         </div>
     </div>
@@ -61,6 +28,8 @@
 
     import ChatRoomParticipantList from './ChatRoomParticipantList.vue';
     import TextMessageList from './TextMessageList.vue';
+    import ChannelList from './ChannelList.vue';
+    import TextMessageInput from './TextMessageInput.vue';
     import Stomp from 'stompjs';
     import config from '../config.js';
     import axios from 'axios';
@@ -70,23 +39,22 @@
 
         components: {
             'app-participant-list' : ChatRoomParticipantList,
-            'app-textmessage-list' : TextMessageList
+            'app-textmessage-list' : TextMessageList,
+            'app-channellist' : ChannelList,
+            'app-textmessage-input' : TextMessageInput
         },
 
         data() {
             return {
-                currentMessage: "",
-                currentLine: {value: "", channel: "", color: ""},
                 connected: false,
-                color: false,
                 stompClient: {},
                 csrf: "",
                 auth: {},
                 transcribing: false,
-                subscribed: [],
                 channelParticipants: [],
                 channels: [],
-                directChannels: []
+                directChannels: [],
+                subscribed: []
             }
         },
         methods: {
@@ -94,6 +62,7 @@
             connect() {
                 var socket = new SockJS('/shared');
                 this.stompClient = Stomp.over(socket);
+                eventBus.$emit('stompClient', {value: this.stompClient});
                 this.stompClient.connect({'X-CSRF-TOKEN': this.csrf}, (frame) => {
                     eventBus.$emit('connected', {value: true});
                     console.log('Connected: ' + frame);
@@ -108,18 +77,8 @@
 
                 });
             },
-
-            unsubscribe() {
-                if (this.subscribed.length > 0) {
-                    const currentSubscription = this.subscribed[0];
-                    eventBus.$emit('unsubscribe', {value: currentSubscription.channel});
-                }
-            },
-
-            toggleSubscription(channel, shouldTranscribe) {
-
+            toggleSubscription(channel, shouldTranscribe){
                 if (this.stompClient.subscribe) {
-
 
                     //i don't think its a good idea to allow multiple sessions simultaneously.
                     if (this.subscribed.length > 0) {
@@ -140,33 +99,14 @@
                     subscription.endpoints.push(sub)
 
                     sub = this.stompClient.subscribe('/topic/transcription/' + channel.channelId, (data) => {
-                        this.showMessage(data);
+                        eventBus.$emit('showMessage', {value: data});
                     });
                     subscription.endpoints.push(sub)
 
                     eventBus.$emit('addSubscription', {value: subscription});
                 }
             },
-
-            handleUnsubscribe(data) {
-                const channel = data.value;
-                const subscription = this.subscribed.filter(s => s.channel.channelId == channel.channelId)[0];
-                for (let i = 0; i < subscription.endpoints.length; i++) {
-                    subscription.endpoints[i].unsubscribe();
-                }
-
-                for (let i = 0; i < this.subscribed.length; i++) {
-
-                    if (this.subscribed[i].channel.channelId === channel.channelId) {
-                        this.subscribed.splice(i, 1);
-                        break;
-                    }
-                }
-                eventBus.$emit('updateSubscribed', {value: []});
-                eventBus.$emit('clearChannelParticipants');
-            },
-
-            disconnect() {
+            disconnect(){
                 if (this.stompClient != null) {
                     this.stompClient.disconnect();
                 }
@@ -174,185 +114,37 @@
                 eventBus.$emit('updateSubscribed', {value: []});
                 eventBus.$emit('clearChannelParticipants');
             },
-
-            nextCharacter(e) {
-                if (this.isCharacterKeyPress(e)) {
-                    this.send(this.auth.name, e.key);
-                }
-            },
-
-            carriageReturn() {
-                this.send(this.auth.name, 'enter');
-            },
-
-            showMessage(data) {
-                let author = JSON.parse(data.body).from;
-                let value = JSON.parse(data.body).text;
-                let color = JSON.parse(data.body).color;
-                let channel = JSON.parse(data.body).channel;
-                let time = JSON.parse(data.body).time;
-                console.log("received message from channel: " + channel.toString());
-                if (value.toLowerCase() == 'enter') {
-                    if (this.currentLine.value) {
-                        this.currentLine.channel = channel.name;
-                        this.currentLine.time = time;
-                        this.currentLine.author = author;
-                        eventBus.$emit('addMessage', {value: {data: this.currentLine, textClass: color}})
-                        this.currentLine = {value: "", channel: "", author: "", time: undefined};
-                        this.currentMessage = "";
-                        this.$scrollTo(this.$refs.scrollTarget, 500)
-                    }
-                    eventBus.$emit('toggleColor', {value: !this.color});
-                }
-                else if (value.toLowerCase() == 'backspace') {
-                    if (this.currentLine.value.length > 0) {
-                        this.currentLine.color = color;
-                        this.currentLine.value = this.currentLine.value.substring(0, this.currentLine.value.length - 1)
-                    }
-                } else {
-                    this.currentLine.color = color;
-                    this.currentLine.value += value;
-                }
-
-            },
-
-            send(from, msg) {
-                const channel = {
-                    channelId: this.subscribed[0].channel.channelId,
-                    name: this.subscribed[0].channel.name
-                };
+            sendMessage(from, msg, channel, color){
                 this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
-                    JSON.stringify({'from': from, 'text': msg, 'channel': channel, 'color': this.textColor}));
-            },
-
-            isCharacterKeyPress(e) {
-                var keycode = e.keyCode;
-
-                var valid =
-                    (keycode > 47 && keycode < 58) || // number keys
-                    (keycode == 32 || keycode == 13 || keycode == 8) || // spacebar & return key(s) (if you want to allow carriage returns)
-                    (keycode > 64 && keycode < 91) || // letter keys
-                    (keycode > 95 && keycode < 112) || // numpad keys
-                    (keycode > 185 && keycode < 193) || // ;=,-./` (in order)
-                    (keycode > 218 && keycode < 223);   // [\]' (in order)
-
-                return valid;
-            },
-            toggleColor() {
-                eventBus.$emit('toggleColor', {value: !this.color});
-            }
-        },
-        computed: {
-            channelsListen() {
-                return this.channels.filter(c => !c.transcribers || c.transcribers.length == 0);
-            },
-            channelsTranscribe() {
-                return this.channels.filter(c => c.transcribers && c.transcribers.length > 0);
-            },
-            textColor() {
-                return this.color ? 'info' : 'warning'
-            },
-            isTranscriber() {
-                if (!this.auth.name) {
-                    return false;
-                }
-
-                for (let i = 0; i < this.channelParticipants.length; i++) {
-                    if (this.channelParticipants[i].transcriber && this.channelParticipants[i].user.name == this.auth.name) {
-                        return true;
-                    }
-                }
-                return false;
+                    JSON.stringify({'from': from, 'text': msg, 'channel': channel, 'color': color}));
             }
         },
         created() {
 
-            //setup event bus handlers
-            eventBus.$on('connect', () => this.connect());
-            eventBus.$on('disconnect', () => this.disconnect());
-
-            eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
-            eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
-            eventBus.$on('auth', (data) => this.auth = data.value);
-            eventBus.$on('channelParticipants', (data) => {
-                this.channelParticipants = data.value
-            });
-            eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
-            eventBus.$on('channels', (data) => this.channels = data.value);
-            eventBus.$on('toggleColor', (data) => {
-                this.color = data.value
-            });
 
-            this.csrf = config.getCsrfHeader();
+            eventBus.$on('send', (data)=>this.sendMessage(data.value.from, data.value.msg, data.value.channel, data.value.color));
+            eventBus.$on('connect', () => this.connect());
+            eventBus.$on('disconnectStomp', () => this.disconnect());
+            eventBus.$on('connected', (data) => this.connected = data.value);
+            eventBus.$on('auth', (data) => this.auth = data.value);
+
             axios.get('api/user')
                 .then(res => eventBus.$emit('auth', {value: res.data}))
                 .catch(err => console.log("Not logged in"));
 
-            axios.get('api/channel')
-                .then(res => {
-                    eventBus.$emit('channels', {value: res.data})
-                })
-                .catch(err => console.log("Error loading channels"));
-
+            this.csrf = config.getCsrfHeader();
             eventBus.$emit('connect');
+
+            eventBus.$on('toggleSubscription', (data)=>{
+                this.toggleSubscription(data.value.channel, data.value.shouldTranscribe)
+            });
         }
     }
 </script>
 
 <style scoped>
-    #current-line {
-        padding: 12px;
-        font-weight: bold;
-        font-size: 22px;
-    }
 
-    #subscription-list .btn, #transcribe-list .btn {
-        color: #428bca;
-    }
 
-    #subscription-list h3, #transcribe-list h3 {
-        color: #428bca;
-        font-size: 20px;
-        font-weight: bold;
-    }
-
-    #chat-window input {
-        height: 40px;
-        border-radius: 4px;
-        border: 1px solid rgba(0, 0, 0, 0.3);
-        background: white;
-        font-size: 26px;
-        padding-left: 10px;
-        font-weight: bold;
-    }
-
-    #chat-window input:focus {
-        outline-width: 0;
-    }
-
-    #toggle-color-button.input-group-addon:hover {
-        cursor: pointer;
-        background: #555;
-        color: #eee;
-    }
-
-    .bg-info {
-        background: #00aedb;
-        color: white;
-        border: none;
-    }
-
-    .bg-warning {
-        background: #f37735;
-        color: white;
-        border: none;
-    }
-
-    #input-container{
-        width: 75%;
-        margin: 0px auto;
-        margin-top: 25px;
-    }
 </style>

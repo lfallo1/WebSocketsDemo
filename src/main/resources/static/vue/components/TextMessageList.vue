@@ -25,6 +25,7 @@
         },
         created() {
             eventBus.$on('addMessage', (data) => this.messages.push(data.value));
+            eventBus.$on('scroll', () => this.$scrollTo(this.$refs.scrollTarget, 500))
         }
     }
 
