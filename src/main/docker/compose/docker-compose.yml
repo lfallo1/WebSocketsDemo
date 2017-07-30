@@ -1,7 +1,7 @@
 version: "3.1"
 services:
   spring-boot-docker:
-    image: lfallo1/websocket-demo:6e592f2
+    image: lfallo1/websocket-demo:c2b55af
     restart: always
     ports:
       - "8082:8080"

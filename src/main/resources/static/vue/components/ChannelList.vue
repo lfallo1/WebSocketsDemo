@@ -85,18 +85,16 @@
         },
         created(){
             eventBus.$on('connected', (data)=>this.connected = data.value);
+            eventBus.$on('disconnect', () => this.disconnect());
+
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
-            eventBus.$on('auth', (data) => this.auth = data.value);
-            eventBus.$on('channels', (data) => {
-                this.channels = data.value
-            });
-            eventBus.$on('disconnect', () => this.disconnect());
 
-            eventBus.$on('channelParticipants', (data) => {
-                this.channelParticipants = data.value
-            });
+            eventBus.$on('auth', (data) => this.auth = data.value);
+            eventBus.$on('channels', (data) => this.channels = data.value);
+
+            eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
 
             this.csrf = config.getCsrfHeader();

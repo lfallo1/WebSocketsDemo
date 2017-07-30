@@ -14,10 +14,12 @@
                 </div>
             </div>
 
+            <!-- Text input for transcriber -->
             <app-textmessage-input></app-textmessage-input>
 
             <br>
 
+            <!-- list of available channels / disconnect button if currently connected -->
             <app-channellist></app-channellist>
 
         </div>
@@ -38,21 +40,17 @@
     export default {
 
         components: {
-            'app-participant-list' : ChatRoomParticipantList,
-            'app-textmessage-list' : TextMessageList,
-            'app-channellist' : ChannelList,
-            'app-textmessage-input' : TextMessageInput
+            'app-participant-list': ChatRoomParticipantList,
+            'app-textmessage-list': TextMessageList,
+            'app-channellist': ChannelList,
+            'app-textmessage-input': TextMessageInput
         },
 
         data() {
             return {
-                connected: false,
                 stompClient: {},
                 csrf: "",
                 auth: {},
-                transcribing: false,
-                channelParticipants: [],
-                channels: [],
                 directChannels: [],
                 subscribed: []
             }
@@ -77,7 +75,7 @@
 
                 });
             },
-            toggleSubscription(channel, shouldTranscribe){
+            toggleSubscription(channel, shouldTranscribe) {
                 if (this.stompClient.subscribe) {
 
                     //i don't think its a good idea to allow multiple sessions simultaneously.
@@ -106,7 +104,7 @@
                     eventBus.$emit('addSubscription', {value: subscription});
                 }
             },
-            disconnect(){
+            disconnect() {
                 if (this.stompClient != null) {
                     this.stompClient.disconnect();
                 }
@@ -114,7 +112,7 @@
                 eventBus.$emit('updateSubscribed', {value: []});
                 eventBus.$emit('clearChannelParticipants');
             },
-            sendMessage(from, msg, channel, color){
+            sendMessage(from, msg, channel, color) {
                 this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
                     JSON.stringify({'from': from, 'text': msg, 'channel': channel, 'color': color}));
             }
@@ -123,11 +121,11 @@
 
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
+            eventBus.$on('toggleSubscription', (data) => this.toggleSubscription(data.value.channel, data.value.shouldTranscribe));
 
-            eventBus.$on('send', (data)=>this.sendMessage(data.value.from, data.value.msg, data.value.channel, data.value.color));
             eventBus.$on('connect', () => this.connect());
             eventBus.$on('disconnectStomp', () => this.disconnect());
-            eventBus.$on('connected', (data) => this.connected = data.value);
+            eventBus.$on('send', (data) => this.sendMessage(data.value.from, data.value.msg, data.value.channel, data.value.color));
             eventBus.$on('auth', (data) => this.auth = data.value);
 
             axios.get('api/user')
@@ -136,10 +134,6 @@
 
             this.csrf = config.getCsrfHeader();
             eventBus.$emit('connect');
-
-            eventBus.$on('toggleSubscription', (data)=>{
-                this.toggleSubscription(data.value.channel, data.value.shouldTranscribe)
-            });
         }
     }
 </script>
