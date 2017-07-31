@@ -75,6 +75,23 @@
 
                 });
             },
+            handleUnsubscribe(data) {
+                const channel = data.value;
+                const subscription = this.subscribed.filter(s => s.channel.channelId == channel.channelId)[0];
+                for (let i = 0; i < subscription.endpoints.length; i++) {
+                    subscription.endpoints[i].unsubscribe();
+                }
+
+//                for (let i = 0; i < this.subscribed.length; i++) {
+//
+//                    if (this.subscribed[i].channel.channelId === channel.channelId) {
+//                        this.subscribed.splice(i, 1);
+//                        break;
+//                    }
+//                }
+                eventBus.$emit('updateSubscribed', {value: []});
+                eventBus.$emit('clearChannelParticipants');
+            },
             toggleSubscription(channel, shouldTranscribe) {
                 if (this.stompClient.subscribe) {
 
@@ -122,6 +139,7 @@
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
             eventBus.$on('toggleSubscription', (data) => this.toggleSubscription(data.value.channel, data.value.shouldTranscribe));
+            eventBus.$on('unsubscribe', this.handleUnsubscribe);
 
             eventBus.$on('connect', () => this.connect());
             eventBus.$on('disconnectStomp', () => this.disconnect());

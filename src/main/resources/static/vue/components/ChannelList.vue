@@ -62,23 +62,6 @@
                     eventBus.$emit('unsubscribe', {value: currentSubscription.channel});
                 }
             },
-            handleUnsubscribe(data) {
-                const channel = data.value;
-                const subscription = this.subscribed.filter(s => s.channel.channelId == channel.channelId)[0];
-                for (let i = 0; i < subscription.endpoints.length; i++) {
-                    subscription.endpoints[i].unsubscribe();
-                }
-
-                for (let i = 0; i < this.subscribed.length; i++) {
-
-                    if (this.subscribed[i].channel.channelId === channel.channelId) {
-                        this.subscribed.splice(i, 1);
-                        break;
-                    }
-                }
-                eventBus.$emit('updateSubscribed', {value: []});
-                eventBus.$emit('clearChannelParticipants');
-            },
             disconnect() {
                 eventBus.$emit('disconnectStomp');
             }
@@ -87,7 +70,6 @@
             eventBus.$on('connected', (data)=>this.connected = data.value);
             eventBus.$on('disconnect', () => this.disconnect());
 
-            eventBus.$on('unsubscribe', this.handleUnsubscribe);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
 

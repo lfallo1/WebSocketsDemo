@@ -86,14 +86,6 @@
                 }
                 return false;
             },
-            hasTranscriber() {
-                for (let i = 0; i < this.channelParticipants.length; i++) {
-                    if (this.channelParticipants[i].transcriber) {
-                        return true;
-                    }
-                }
-                return false;
-            },
             otherTranscriberExists() {
                 if (this.auth.name && this.hasTranscriber) {
                     for (let i = 0; i < this.channelParticipants.length; i++) {
