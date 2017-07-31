@@ -44,9 +44,10 @@ public class WebSocketEvents {
 
     @EventListener
     public void handleSessionUnsubscribeEvent(SessionUnsubscribeEvent event) {
+        String sessionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SESSION_ID_HEADER, String.class);
         String subscriptionId = event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.SUBSCRIPTION_ID_HEADER, String.class);
         //remove participant from channel
-        removeParticipantBySubscriptionId(subscriptionId);
+        removeParticipantBySubscriptionId(subscriptionId, sessionId);
     }
 
     @EventListener
@@ -61,12 +62,12 @@ public class WebSocketEvents {
      *
      * @param subscriptionId
      */
-    private void removeParticipantBySubscriptionId(String subscriptionId) {
+    private void removeParticipantBySubscriptionId(String subscriptionId, String sessionId) {
 
         for (String channel : this.channelSubscribers.keySet()) {
             Set<ChannelSubscription> subscriptions = this.channelSubscribers.get(channel);
             for (ChannelSubscription subscription : subscriptions) {
-                if (subscription.getSubscriptionId().equals(subscriptionId)) {
+                if (subscription.getSubscriptionId().equals(subscriptionId) && subscription.getSessionId().equals(sessionId)) {
                     subscriptions.remove(subscription);
                     this.channelSubscribers.put(channel, subscriptions);
 
