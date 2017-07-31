@@ -182,6 +182,8 @@ COPY transcriber (transcriber_id, username, channel_id) FROM stdin;
 2	transcriber_msdn	1
 3	transcriber_traffic	2
 4	test	1
+5	lfallon	2
+7	jcoz	2
 \.
 
 
@@ -194,6 +196,8 @@ COPY user_roles (user_role_id, username, role) FROM stdin;
 2	transcriber_traffic	ROLE_TRANSCRIBER
 3	transcriber_lrpu	ROLE_TRANSCRIBER
 4	test	ROLE_TRANSCRIBER
+5	lfallon	ROLE_TRANSCRIBER
+6	jcoz	ROLE_TRANSCRIBER
 \.
 
 
@@ -201,14 +205,14 @@ COPY user_roles (user_role_id, username, role) FROM stdin;
 -- Name: user_roles_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('user_roles_seq', 4, true);
+SELECT pg_catalog.setval('user_roles_seq', 6, true);
 
 
 --
 -- Name: user_transcribe_channel_user_transcribe_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('user_transcribe_channel_user_transcribe_id_seq', 4, true);
+SELECT pg_catalog.setval('user_transcribe_channel_user_transcribe_id_seq', 7, true);
 
 
 --
@@ -220,6 +224,8 @@ transcriber_msdn	$2a$10$/BPbiwTq4ljnD0GPBOW7juUwwl8yQSEBbYwsF4cAW1eoOp8yogILC	1
 transcriber_traffic	$2a$10$.qXl8BXAb3u9L7TdJDY9u.DEmgLtxmhbzR7NI0J9X.UY3gmUTWxSC	1
 transcriber_lrpu	$2a$10$TjykuOlzEP8BJT1Ei1yLu.tV0u61cMVjuuRx4QAMVpjt29ZCHcWJK	1
 test	$2a$10$JEU3TgaOTx3fW4xGmRzGgeOJ64WW2A1nru.FDg6CL.FZ9V6hFqgdC	1
+lfallon	$2a$10$TUF7.dc5yt5x4B8lzvuaDORquT/4HE1h3PMpRZqT7rR3F7yen265O	1
+jcoz	$2a$10$I5q9A5XTNe2UbxklspV4eOD2k6E5HyjZbyUG8LvUai4vmFCBy35NC	1
 \.
 
 

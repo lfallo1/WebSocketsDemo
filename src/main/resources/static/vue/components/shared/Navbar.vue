@@ -60,14 +60,15 @@
                 subscribed: [],
                 connected: false,
                 navbarDropdownIsOpen: false,
-                navCollapsed: true
+                navCollapsed: true,
+                channelParticipants: []
             }
         },
         computed: {
             subscribedText() {
                 //they will have multiple subscriptions on same channel. so get unique list for display purposes
                 const arr = config.unique(this.subscribed);
-                return this.subscribed.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ') ' : '';
+                return this.subscribed.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + this.channelParticipants.length + ' total) ' : '';
             }
         },
         methods: {
@@ -97,6 +98,9 @@
             eventBus.$on('auth', (data) => this.auth = data.value);
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
 //            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
+
+            eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
+            eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
         }
     }
 

@@ -2,14 +2,13 @@
     <div>
         <div id="chat-participants-container" class="col-md-3">
             <div class="panel panel-primary" v-show="loggedInParticipants.length > 0">
-                <div class="panel-heading">Channel participants</div>
+                <div class="panel-heading">Logged in participants</div>
                 <div class="panel-body">
                     <div class="channel-participant"
                          v-for="participant in loggedInParticipants">
                         {{participant.user.name}}
-                        <i v-if="auth.name">{{auth.name == participant.user.name ? ' (self)' : ''}}</i>
-                        <small v-if="participant.transcriber"><span
-                                class="text-primary glyphicon glyphicon-user"> [Transcriber]</span>
+                        <i v-if="auth.name"> {{auth.name == participant.user.name ? ' (self)' : ''}}</i>
+                        <small v-if="participant.transcriber"><span class="text-primary"> [Transcriber]</span>
                         </small>
                         <hr>
                     </div>
