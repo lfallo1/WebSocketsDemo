@@ -93,4 +93,19 @@ public class CustomUserDetails implements UserDetails, Serializable {
     public void setTranscribing(boolean transcribing) {
         isTranscribing = transcribing;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CustomUserDetails that = (CustomUserDetails) o;
+
+        return username.equals(that.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return username.hashCode();
+    }
 }

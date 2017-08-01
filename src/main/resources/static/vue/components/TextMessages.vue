@@ -7,6 +7,22 @@
                 <!-- list of participants in the channel -->
                 <app-participant-list></app-participant-list>
 
+                <div class="well well-sm" v-show="showChat">
+                    <small>Chatting with another user</small>
+                    <div>
+                        <p>chatting with {{directChatUsername}}</p>
+                        <ul v-for="message in directChatMessages">
+                            <li>
+                                <small>{{message.author}} ({{message.time}})</small>&nbsp; {{message.text}}
+                            </li>
+                        </ul>
+                        <input type="text" v-model="directChatInputText"/>
+                        <button class="btn btn-sm btn-success" @click="sendDirectTextMessage(directChatChannel)">Send
+                        </button>
+                    </div>
+                    <button class="btn btn-sm btn-danger" @click="()=>showDirectChat=false">End Chat</button>
+                </div>
+
                 <div class="col-md-8">
                     <!-- list of messages -->
                     <app-textmessage-list></app-textmessage-list>
@@ -52,11 +68,25 @@
                 csrf: "",
                 auth: {},
                 directChannels: [],
-                subscribed: []
+                subscribed: [],
+                directChatUsername: "",
+                showDirectChat: false,
+                directChatChannel: "",
+                directChatInputText: "",
+                directChatMessages: []
             }
         },
         methods: {
 
+            sendDirectTextMessage() {
+                this.stompClient.send("/app/direct/message/" + this.directChatChannel, {},
+                    JSON.stringify({
+                        'from': this.auth.name,
+                        'text': this.directChatInputText,
+                        'channel': {name: this.directChatChannel}
+                    }));
+                this.directChatInputText = "";
+            },
             connect() {
                 var socket = new SockJS('/shared');
                 this.stompClient = Stomp.over(socket);
@@ -67,9 +97,9 @@
 
                     if (this.auth.name) {
                         this.stompClient.subscribe('/topic/direct/request/' + this.auth.name, (data) => {
-                            this.directChannels.push(this.stompClient.subscribe('/topic/direct/message/' + JSON.parse(data.body).text, (data) => {
-                                console.log(data);
-                            }));
+                            eventBus.$emit('directChatReceive', {value: JSON.parse(data.body).from});
+                            this.directChatChannel = JSON.parse(data.body).text;
+                            this.stompClient.subscribe('/topic/direct/message/' + this.directChatChannel, this.handleDirectMessage);
                         });
                     }
 
@@ -132,9 +162,62 @@
             sendMessage(from, msg, channel, color) {
                 this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
                     JSON.stringify({'from': from, 'text': msg, 'channel': channel, 'color': color}));
+            },
+            handleDirectMessage(data){
+                this.showDirectChat = true;
+                let author = JSON.parse(data.body).from;
+                let text = JSON.parse(data.body).text;
+                let channel = JSON.parse(data.body).channel;
+                let time = JSON.parse(data.body).time;
+                const message = {
+                    'author': author,
+                    'text': text,
+                    'channel': channel,
+                    'time': time
+                };
+                this.directChatMessages.push(message);
+            },
+            sendDirect(username) {
+                const unique = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();
+                this.directChatChannel = unique;
+                this.stompClient.subscribe('/topic/direct/message/' + unique, this.handleDirectMessage);
+
+                this.stompClient.send("/app/direct/request/" + username, {},
+                    JSON.stringify({
+                        'from': this.auth.name,
+                        'text': unique,
+                        'channel': {name: username}
+                    }));
+
+                eventBus.$emit('directChatRequest', {value: username});
+
+//                    setTimeout(() => {
+//
+//                        this.stompClient.send("/app/direct/message/" + unique, {},
+//                            JSON.stringify({
+//                                'from': this.auth.name,
+//                                'text': "Hey there, " + username + ". Had a quick question?",
+//                                'channel': {name: unique}
+//                            }));
+//                    }, 1000);
+            }
+        },
+        computed: {
+            showChat() {
+                return this.showDirectChat && this.auth.name
             }
         },
         created() {
+
+            eventBus.$on('directChatRequestInvocation', (data) => this.sendDirect(data.value));
+            eventBus.$on('directChatReceive', (data) => {
+                this.directChatUsername = data.value;
+            });
+
+            eventBus.$on('directChatRequest', (data) => {
+                this.showDirectChat = true;
+                this.directChatUsername = data.value;
+            });
 
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);

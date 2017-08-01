@@ -4,7 +4,7 @@
             <div class="panel panel-primary" v-show="loggedInParticipants.length > 0">
                 <div class="panel-heading">Logged in participants</div>
                 <div class="panel-body">
-                    <div class="channel-participant"
+                    <div class="channel-participant" @click="sendDirect(participant.user.name)"
                          v-for="participant in loggedInParticipants">
                         {{participant.user.name}}
                         <i v-if="auth.name"> {{auth.name == participant.user.name ? ' (self)' : ''}}</i>
@@ -46,31 +46,9 @@
         methods: {
             sendDirect(username) {
 
-//                if (this.auth.name && username != this.auth.name) {
-//
-//                    const unique = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();
-//
-//                    this.directChannels.push(this.stompClient.subscribe('/topic/direct/message/' + unique, (data) => {
-//                        console.log(data);
-//                    }));
-//
-//                    this.stompClient.send("/app/direct/request/" + username, {},
-//                        JSON.stringify({
-//                            'from': this.auth.name,
-//                            'text': unique,
-//                            'channel': {name: username}
-//                        }));
-//
-//                    setTimeout(() => {
-//
-//                        this.stompClient.send("/app/direct/message/" + unique, {},
-//                            JSON.stringify({
-//                                'from': this.auth.name,
-//                                'text': "Hey there, " + username + ". Had a quick question?",
-//                                'channel': {name: unique}
-//                            }));
-//                    }, 1000);
-//                }
+                if (this.auth.name && username != this.auth.name) {
+                    eventBus.$emit('directChatRequestInvocation', {value: username});
+                }
             }
         },
         computed: {

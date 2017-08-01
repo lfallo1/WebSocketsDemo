@@ -1,6 +1,7 @@
 package com.lancefallon.config.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -8,6 +9,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -21,7 +24,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     private RestAuthenticationFailureHandler authenticationFailureHandler;
     @Autowired
     private RestAuthenticationSuccessHandler authenticationSuccessHandler;
-
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
 
@@ -35,6 +37,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(customAuthenticationProvider);
     }
 
+    @Bean
+    public ConcurrentSessionControlAuthenticationStrategy concurrentSessionStrategy() {
+        ConcurrentSessionControlAuthenticationStrategy concurrentSessionStrategy = new ConcurrentSessionControlAuthenticationStrategy(new SessionRegistryImpl());
+        concurrentSessionStrategy.setExceptionIfMaximumExceeded(true);
+        return concurrentSessionStrategy;
+    }
+
     /**
      * configuration of web based security at a resource level, based on a selection match -
      * e.g. The example below restricts the URLs that start with /admin/ to users that have ADMIN role,
@@ -42,6 +51,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        ConcurrentSessionControlAuthenticationStrategy sessionStrategy = concurrentSessionStrategy();
 //		// @formatter:off
         http
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
@@ -71,6 +82,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     public void configure(WebSecurity web) throws Exception {
+
     }
 
 }

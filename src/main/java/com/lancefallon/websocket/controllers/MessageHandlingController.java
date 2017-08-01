@@ -39,9 +39,9 @@ public class MessageHandlingController {
         return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
     }
 
-    @MessageMapping("/direct/message/{uniqueChannel}")
-    @SendTo("/topic/direct/message/{uniqueChannel}")
-    public OutputMessage sendDirect(@DestinationVariable String uniqueChannel, WebsocketMessage websocketMessage) throws AccessDeniedException {
+    @MessageMapping("/direct/message/{unique}")
+    @SendTo("/topic/direct/message/{unique}")
+    public OutputMessage sendDirect(@DestinationVariable String unique, WebsocketMessage websocketMessage) throws AccessDeniedException {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
         return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
     }
