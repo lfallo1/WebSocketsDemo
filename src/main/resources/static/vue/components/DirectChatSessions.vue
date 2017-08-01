@@ -1,19 +1,19 @@
 <template>
     <div>
-        <div v-show="directChatSessions.length > 0" v-for="session in directChatSessions">
-            <div class="direct-chat-session">
+        <div class="direct-chat-sessions row" v-show="directChatSessions.length > 0" v-for="session in directChatSessions">
+            <div class="direct-chat-session-container col-xs-4">
                 <div>
-                    <p>Chat session: {{session.directChatUsernames.toString()}}</p>
-                    <ul v-for="message in session.directChatMessages">
-                        <li>
-                            <small>{{message.author}} ({{message.time}})</small>&nbsp; {{message.text}}
-                        </li>
-                    </ul>
-                    <input type="text" v-model="session.directChatInputText"/>
-                    <button class="btn btn-sm btn-success" @click="sendDirectTextMessage(session)">Send
+                    <div class="direct-chat-session-usernames">
+                        Chat session: {{session.directChatUsernames.toString()}}
+                        <span class="glyphicon glyphicon-remove text-danger" @click="closeDirectChatSession(session)"></span>
+                    </div>
+                    <div :class="{'message-self':message.author == auth.name, 'message-other':message.author != auth.name}" class="direct-chat-session-message" v-for="message in session.directChatMessages">
+                        <small>{{message.author}} ({{message.time}})</small>&nbsp; {{message.text}}
+                    </div>
+                    <input class="direct-chat-session-input form-control" type="text" v-model="session.directChatInputText"/>
+                    <button class="direct-chat-session-send-btn btn btn-sm btn-default" @click="sendDirectTextMessage(session)">Send
                     </button>
                 </div>
-                <button class="btn btn-sm btn-danger" @click="closeDirectChatSession(session)">End Chat</button>
             </div>
         </div>
     </div>
@@ -102,4 +102,95 @@
 
 <style scoped>
 
+    .direct-chat-session-usernames{
+        background: rgb(1,165,238);
+        width: 105%;
+        margin-left: -2.5%;
+        border-radius: 4px 4px 0px 0px;
+        margin-top: -10px;
+        margin-bottom: 35px;
+        padding: 7px;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    .direct-chat-session-usernames .glyphicon{
+        float: right;
+        font-size: 20px;
+    }
+
+    .direct-chat-session-usernames .glyphicon:hover{
+        cursor: pointer;
+        opacity: 0.7;
+    }
+
+    .direct-chat-session-message{
+        background: #222;
+        margin: 8px auto;
+        padding: 8px;
+        width: 65%;
+    }
+
+    .direct-chat-session-message small{
+        color: rgb(1,165,238);
+
+    }
+
+    .direct-chat-session-message.message-other{
+        background: rgb(1,165,238) !important;
+        color: #111;
+    }
+
+    .message-other small{
+        color: white;
+    }
+
+    .direct-chat-session-container{
+        padding: 8px;
+        border-radius: 5px;
+        background: #555;
+        color: white;
+    }
+
+    .direct-chat-session-container input{
+        margin-top: 25px;
+        width: 80%;
+    }
+
+    .direct-chat-session-container .btn, .direct-chat-session-container input{
+        display: inline-block !important;
+    }
+
+    .direct-chat-session-send-btn{
+        font-weight: bold;
+        padding: 7px;
+        margin-top: -3px;
+    }
+
+    .direct-chat-session-container{
+        max-height: 200px;
+        overflow-y: scroll;
+    }
+
+    .direct-chat-session-send-btn{
+        font-weight: bold;
+        padding: 7px;
+        margin-top: -3px;
+    }
+
+    .direct-chat-session-container{
+        max-height: 200px;
+        overflow-y: scroll;
+        border: 2px solid #777;
+    }
+
+    .message-self{
+        float: right;
+        margin-right: 12px !important;
+    }
+
+    .message-other{
+        float: left;
+        margin-left: 12px !important;
+    }
 </style>

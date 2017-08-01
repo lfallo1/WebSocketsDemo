@@ -4,7 +4,7 @@
             <div class="panel panel-primary" v-show="loggedInParticipants.length > 0">
                 <div class="panel-heading">Logged in participants</div>
                 <div class="panel-body">
-                    <div class="channel-participant" @click="directChatRequest(participant.user.name)"
+                    <div :class="{'clickable': auth.name && auth.name != participant.user.name}" class="channel-participant" @click="directChatRequest(participant.user.name)"
                          v-for="participant in loggedInParticipants">
                         {{participant.user.name}}
                         <i v-if="auth.name"> {{auth.name == participant.user.name ? ' (self)' : ''}}</i>

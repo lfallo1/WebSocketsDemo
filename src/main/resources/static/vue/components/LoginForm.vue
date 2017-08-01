@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div id="login-form-wrapper" class="col-md-4 col-md-offset-4">
+        <div id="login-form-wrapper" class="col-md-4 col-md-offset-4 col-sm-6 col-sm-offset-3">
             <h2>Login</h2>
             <div>
                 <form id="login-form" class="form-horizontal" @submit.prevent.stop="submit">
