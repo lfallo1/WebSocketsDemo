@@ -4,7 +4,7 @@
             <div class="panel panel-primary" v-show="loggedInParticipants.length > 0">
                 <div class="panel-heading">Logged in participants</div>
                 <div class="panel-body">
-                    <div class="channel-participant" @click="sendDirect(participant.user.name)"
+                    <div class="channel-participant" @click="directChatRequest(participant.user.name)"
                          v-for="participant in loggedInParticipants">
                         {{participant.user.name}}
                         <i v-if="auth.name"> {{auth.name == participant.user.name ? ' (self)' : ''}}</i>
@@ -44,11 +44,8 @@
             }
         },
         methods: {
-            sendDirect(username) {
-
-                if (this.auth.name && username != this.auth.name) {
-                    eventBus.$emit('directChatRequestInvocation', {value: username});
-                }
+            directChatRequest(username) {
+                eventBus.$emit('tryStartDirectChat', {value: username});
             }
         },
         computed: {
