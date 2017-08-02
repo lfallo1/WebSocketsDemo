@@ -33,9 +33,17 @@ public class WebSocketEvents {
 
     //store subscriber / session info
     private Map<String, Set<ChannelSubscription>> channelSubscribers = new HashMap<>();
+    private Set<String> users = new HashSet<>();
 
     @EventListener
     public void handleSessionSubscribeEvent(SessionSubscribeEvent event) throws UnauthorizedException {
+
+        if (event.getUser() != null) {
+            users.add(event.getUser().getName());
+            System.out.println(String.format("total connected users %d", this.users.size()));
+            messageTemplate.convertAndSend("/topic/users/connected", this.users);
+        }
+
         if (!event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.DESTINATION_HEADER, String.class).contains("direct")) {
             //add as a participant to channel
             addParticipant(event);
@@ -52,6 +60,14 @@ public class WebSocketEvents {
 
     @EventListener
     public void handleSessionDisconnectEvent(SessionDisconnectEvent event) {
+
+        if (event.getUser() != null) {
+            users.remove(event.getUser().getName());
+            System.out.println(String.format("total connected users %d", this.users.size()));
+            messageTemplate.convertAndSend("/topic/users/connected", this.users);
+            messageTemplate.convertAndSend("/topic/users/disconnect", event.getUser().getName());
+        }
+
         //remove participant from channels
         removeParticipantBySessionId(event);
     }

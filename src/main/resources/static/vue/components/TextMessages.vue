@@ -7,7 +7,6 @@
                 <!-- list of participants in the channel -->
                 <app-participant-list></app-participant-list>
 
-                <app-directchatsessions></app-directchatsessions>
 
                 <div class="col-md-8">
                     <!-- list of messages -->
@@ -23,6 +22,10 @@
 
             <!-- list of available channels / disconnect button if currently connected -->
             <app-channellist></app-channellist>
+
+            <div id="direct-chat-windows">
+                <app-directchatsessions></app-directchatsessions>
+            </div>
 
         </div>
     </div>
@@ -55,7 +58,8 @@
                 stompClient: {},
                 csrf: "",
                 auth: {},
-                subscribed: []
+                subscribed: [],
+                directMessageSubscriptions: []
             }
         },
         methods: {
@@ -71,16 +75,32 @@
             connect() {
                 var socket = new SockJS('/shared');
                 this.stompClient = Stomp.over(socket);
-                eventBus.$emit('stompClient', {value: this.stompClient});
                 this.stompClient.connect({'X-CSRF-TOKEN': this.csrf}, (frame) => {
+
+                    //get notified whenever user connects or disconnects
+                    this.stompClient.subscribe('/topic/users/connected', (data) => eventBus.$emit('usersConnected', {value: data}));
+                    this.stompClient.subscribe('/topic/users/disconnect', (data) => eventBus.$emit('disconnectUser', {value: data}));
+
                     eventBus.$emit('connected', {value: true});
                     console.log('Connected: ' + frame);
 
                     if (this.auth.name) {
+
                         this.stompClient.subscribe('/topic/direct/request/' + this.auth.name, (data) => {
                             const channel = JSON.parse(data.body).text;
-                            eventBus.$emit('directChatRequest', {value: {username: JSON.parse(data.body).from, channel: channel}});
-                            this.stompClient.subscribe('/topic/direct/message/' + channel, (data)=>eventBus.$emit('handleDirectMessage', data));
+                            eventBus.$emit('directChatRequest', {
+                                value: {
+                                    username: JSON.parse(data.body).from,
+                                    channel: channel
+                                }
+                            });
+
+                            //subscribe to direct message and store subscription
+                            let directMessageSubscription = this.stompClient.subscribe('/topic/direct/message/' + channel, (data) => eventBus.$emit('handleDirectMessage', data));
+                            directMessageSubscription.users = [JSON.parse(data.body).from, this.auth.name];
+                            this.directMessageSubscriptions.push(directMessageSubscription);
+                            console.log(this.directMessageSubscriptions);
+                            eventBus.$emit('directMessageSubscriptions', {value: this.directMessageSubscriptions});
                         });
                     }
 
@@ -139,7 +159,13 @@
             directChatStart(username) {
                 const unique = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();
                 this.directChatChannel = unique;
-                this.stompClient.subscribe('/topic/direct/message/' + unique, (data)=>eventBus.$emit('handleDirectMessage', data));
+
+                //subscribe to direct message and store subscription
+                let directMessageSubscription = this.stompClient.subscribe('/topic/direct/message/' + unique, (data) => eventBus.$emit('handleDirectMessage', data));
+                directMessageSubscription.users = [username, this.auth.name];
+                this.directMessageSubscriptions.push(directMessageSubscription);
+                console.log(this.directMessageSubscriptions);
+                eventBus.$emit('directMessageSubscriptions', {value: this.directMessageSubscriptions});
 
                 this.stompClient.send("/app/direct/request/" + username, {},
                     JSON.stringify({
@@ -153,10 +179,18 @@
         },
         created() {
 
-            // direct channel event listeners
-            eventBus.$on('sendDirectTextMessage', (data)=>this.sendDirectTextMessage(data.value.text, data.value.channel));
-            eventBus.$on('directChatRequestInvocation', (data) => this.directChatStart(data.value));
+            eventBus.$on('disconnectUser', (data) => {
+                const user = data.value.body;
+                for (var i = 0; i < this.directMessageSubscriptions.length; i++) {
+                    if (this.directMessageSubscriptions[i].users.indexOf(user) > -1) {
+                        this.directMessageSubscriptions[i].unsubscribe();
+                    }
+                }
+            });
 
+            // direct channel event listeners
+            eventBus.$on('sendDirectTextMessage', (data) => this.sendDirectTextMessage(data.value.text, data.value.channel));
+            eventBus.$on('directChatRequestInvocation', (data) => this.directChatStart(data.value));
 
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
