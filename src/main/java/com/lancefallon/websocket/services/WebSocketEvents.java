@@ -40,9 +40,10 @@ public class WebSocketEvents {
 
         if (event.getUser() != null) {
             users.add(event.getUser().getName());
-            System.out.println(String.format("total connected users %d", this.users.size()));
-            messageTemplate.convertAndSend("/topic/users/connected", this.users);
         }
+
+        System.out.println(String.format("total connected users %d", this.users.size()));
+        messageTemplate.convertAndSend("/topic/users/connected", this.users);
 
         if (!event.getMessage().getHeaders().get(SimpMessageHeaderAccessor.DESTINATION_HEADER, String.class).contains("direct")) {
             //add as a participant to channel

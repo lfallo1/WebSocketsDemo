@@ -17,7 +17,11 @@
                     <ul class="nav navbar-nav">
                         <li class="connected-navbar-message"
                             :class="{'connected':connected, 'disconnected':!connected}">
-                            <a @click.prevent.stop href="">{{connected ? 'CONNECTED' : 'DISCONNECTED'}} {{subscribedText}}</a>
+                            <a @click.prevent.stop href="">
+                                {{connected ? 'CONNECTED ('+ usersConnected.length +' users logged in)' : 'DISCONNECTED'}}
+                                <br>
+                                <span class="text-primary">{{subscribedText}}</span>
+                            </a>
                             <button class="btn btn-danger" v-if="connected" @click="disconnect"><span
                                     class="glyphicon glyphicon-remove"></span>Disconnect
                             </button>
@@ -61,7 +65,8 @@
                 connected: false,
                 navbarDropdownIsOpen: false,
                 navCollapsed: true,
-                channelParticipants: []
+                channelParticipants: [],
+                usersConnected: []
             }
         },
         computed: {
@@ -101,6 +106,8 @@
 
             eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
+
+            eventBus.$on('usersConnected', (data)=>this.usersConnected = JSON.parse(data.value.body));
         }
     }
 

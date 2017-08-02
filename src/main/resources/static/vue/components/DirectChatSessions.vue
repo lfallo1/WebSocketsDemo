@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div ref="directChatRef"></div>
         <div class="direct-chat-sessions" v-show="directChatSessions.length > 0"
              v-for="session in directChatSessions">
             <div v-show="!session.isHidden">
@@ -16,7 +17,7 @@
                                 <small>{{message.author}} ({{message.time}})</small>&nbsp; {{message.text}}
                             </div>
                             <input class="direct-chat-session-input form-control" type="text"
-                                   v-model="session.directChatInputText"/>
+                                   v-model="session.directChatInputText" @keydown.enter="sendDirectTextMessage(session)"/>
                             <button class="direct-chat-session-send-btn btn btn-sm btn-default"
                                     @click="sendDirectTextMessage(session)">Send
                             </button>
@@ -39,15 +40,7 @@
         data() {
             return {
                 auth: {},
-                directChatSessions: [
-//                    {
-//                        directChatUsername: "",
-//                        showDirectChat: false,
-//                        directChatChannel: "",
-//                        directChatInputText: "",
-//                        directChatMessages: []
-//                    }
-                ]
+                directChatSessions: []
             }
         },
         methods: {
@@ -94,19 +87,24 @@
             },
             handleTryStartDirectChat(data) {
                 const username = data.value;
-                if (this.auth.name && username != this.auth.name && this.canStartDirectChat(username)) {
+                const session = this.hasExistingChat(username);
+                if(session){
+                    session.isHidden = false;
+                }
+                else if (this.auth.name && username != this.auth.name) {
                     eventBus.$emit('directChatRequestInvocation', {value: username});
                 }
+                setTimeout(()=> this.$scrollTo(this.$refs.directChatRef, 500), 100);
             },
-            canStartDirectChat(username) {
+            hasExistingChat(username) {
                 for (let i = 0; i < this.directChatSessions.length; i++) {
                     for (let j = 0; j < this.directChatSessions[i].directChatUsernames.length; j++) {
                         if (this.directChatSessions[i].directChatUsernames[j] == username) {
-                            return false;
+                            return this.directChatSessions[i];
                         }
                     }
                 }
-                return true;
+                return undefined;
             }
         },
         created() {
@@ -138,10 +136,9 @@
 <style scoped>
 
     .direct-chat-session-usernames {
-        background: rgb(1, 165, 238);
+        background: rgb(51,122,183);
         width: 105%;
         margin-left: -2.5%;
-        border-radius: 4px 4px 0px 0px;
         margin-top: -10px;
         margin-bottom: 35px;
         padding: 7px;
@@ -167,12 +164,12 @@
     }
 
     .direct-chat-session-message small {
-        color: rgb(1, 165, 238);
+        color: rgb(51,122,183);
 
     }
 
     .direct-chat-session-message.message-other {
-        background: rgb(1, 165, 238) !important;
+        background: rgb(51,122,183) !important;
         color: #111;
     }
 
@@ -182,9 +179,10 @@
 
     .direct-chat-session-container {
         padding: 8px;
-        border-radius: 5px;
         background: #555;
         color: white;
+        max-height: 200px;
+        overflow-y: scroll;
     }
 
     .direct-chat-session-container input {
@@ -202,21 +200,10 @@
         margin-top: -3px;
     }
 
-    .direct-chat-session-container {
-        max-height: 200px;
-        overflow-y: scroll;
-    }
-
     .direct-chat-session-send-btn {
         font-weight: bold;
         padding: 7px;
         margin-top: -3px;
-    }
-
-    .direct-chat-session-container {
-        max-height: 200px;
-        overflow-y: scroll;
-        border: 2px solid #777;
     }
 
     .message-self {
@@ -230,9 +217,8 @@
     }
 
     .direct-chat-session-container-collapsed{
-        background: rgb(1, 165, 238);
+        background: rgb(51,122,183);
         color: white;
-        border-radius: 5px;
         float: right;
         padding: 5px;
     }
