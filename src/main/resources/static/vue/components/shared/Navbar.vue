@@ -18,14 +18,16 @@
                         <li class="connected-navbar-message"
                             :class="{'connected':connected, 'disconnected':!connected}">
                             <a @click.prevent.stop href="">
-                                {{connected ? 'CONNECTED ('+ usersConnected.length +' users logged in)' : 'DISCONNECTED'}}
+                                {{connected ? 'CONNECTED (' + usersConnected.length + ' users logged in)' : 'DISCONNECTED'}}
                                 <br>
                                 <span class="text-primary">{{subscribedText}}</span>
                             </a>
                             <button class="btn btn-danger" v-if="connected" @click="disconnect"><span
                                     class="glyphicon glyphicon-remove"></span>Disconnect
                             </button>
-                            <button v-else class="btn btn-success" @click="connect"><span class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server</button>
+                            <button v-else class="btn btn-success" @click="connect"><span
+                                    class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -56,11 +58,11 @@
 
     import {eventBus} from '../../main.js';
     import config from '../../config.js';
+    import {mapState} from 'vuex';
 
     export default {
         data() {
             return {
-                auth: {},
                 subscribed: [],
                 connected: false,
                 navbarDropdownIsOpen: false,
@@ -74,14 +76,17 @@
                 //they will have multiple subscriptions on same channel. so get unique list for display purposes
                 const arr = config.unique(this.subscribed);
                 return this.subscribed.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + this.channelParticipants.length + ' total) ' : '';
-            }
+            },
+            ...mapState({
+                auth: state => state.authStore.auth
+            })
         },
         methods: {
             //extract to util file
             disconnect() {
                 eventBus.$emit('disconnect');
             },
-            connect(){
+            connect() {
                 eventBus.$emit('connect');
             },
             handleUnsubscribe(data) {
@@ -92,7 +97,7 @@
                     }
                 }
             },
-            toggleNavCollapsed(){
+            toggleNavCollapsed() {
                 this.navCollapsed = !this.navCollapsed
             }
         },
@@ -100,14 +105,13 @@
             eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('unsubscribe', this.handleUnsubscribe);
-            eventBus.$on('auth', (data) => this.auth = data.value);
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
 //            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
 
             eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
 
-            eventBus.$on('usersConnected', (data)=>this.usersConnected = JSON.parse(data.value.body));
+            eventBus.$on('usersConnected', (data) => this.usersConnected = JSON.parse(data.value.body));
         }
     }
 
@@ -115,7 +119,7 @@
 
 <style scoped>
 
-    #toggle-nav{
+    #toggle-nav {
         z-index: 1000;
     }
 
@@ -131,7 +135,7 @@
         color: #449d44 !important;
     }
 
-    li.connected-navbar-message a{
+    li.connected-navbar-message a {
         display: inline-block;
     }
 

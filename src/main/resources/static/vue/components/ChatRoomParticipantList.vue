@@ -33,13 +33,13 @@
 <script>
 
     import {eventBus} from '../main.js';
+    import {mapState} from 'vuex';
 
     export default {
         data() {
             return {
                 subscribed: [],
                 channelParticipants: [],
-                auth: {},
                 stompClient: {}
             }
         },
@@ -71,14 +71,16 @@
                     }
                 }
                 return false;
-            }
+            },
+            ...mapState({
+                auth: state => state.authStore.auth
+            })
         },
         created() {
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
             eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
-            eventBus.$on('auth', (data) => this.auth = data.value);
         }
     }
 

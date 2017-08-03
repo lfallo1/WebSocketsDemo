@@ -15,6 +15,7 @@
 <script>
 
     import {eventBus} from '../main.js';
+    import {mapState} from 'vuex';
 
     export default{
         data(){
@@ -23,7 +24,6 @@
                 currentLine: {value: "", channel: "", color: ""},
                 subscribed: [],
                 color: false,
-                auth: {},
                 channelParticipants: []
             }
         },
@@ -107,12 +107,14 @@
             },
             textColor() {
                 return this.color ? 'info' : 'warning'
-            }
+            },
+            ...mapState({
+                auth: state => state.authStore.auth
+            })
         },
         created(){
             //setup event bus handlers
             eventBus.$on('toggleColor', (data) => this.color = data.value);
-            eventBus.$on('auth', (data)=>this.auth = data.value);
             eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));

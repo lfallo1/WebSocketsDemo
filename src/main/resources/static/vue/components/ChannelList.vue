@@ -34,26 +34,29 @@
     import {eventBus} from '../main.js';
     import config from '../config.js';
     import axios from 'axios';
+    import {mapState} from 'vuex';
 
-    export default{
-        data(){
+    export default {
+        data() {
             return {
-                auth: {},
                 connected: false,
                 subscribed: [],
                 channels: []
             }
         },
-        computed:{
+        computed: {
             channelsListen() {
                 return this.channels.filter(c => !c.transcribers || c.transcribers.length == 0);
             },
             channelsTranscribe() {
                 return this.channels.filter(c => c.transcribers && c.transcribers.length > 0);
-            }
+            },
+            ...mapState({
+                auth: state => state.authStore.auth
+            })
         },
-        methods:{
-            toggleSubscription (channel, shouldTranscribe) {
+        methods: {
+            toggleSubscription(channel, shouldTranscribe) {
                 eventBus.$emit('toggleSubscription', {value: {channel: channel, shouldTranscribe: shouldTranscribe}})
             },
             unsubscribe() {
@@ -66,16 +69,14 @@
                 eventBus.$emit('disconnectStomp');
             }
         },
-        created(){
-            eventBus.$on('connected', (data)=>this.connected = data.value);
+        created() {
+            eventBus.$on('connected', (data) => this.connected = data.value);
             eventBus.$on('disconnect', () => this.disconnect());
 
             eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
             eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
 
-            eventBus.$on('auth', (data) => this.auth = data.value);
             eventBus.$on('channels', (data) => this.channels = data.value);
-
             eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
 

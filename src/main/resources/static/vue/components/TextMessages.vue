@@ -42,6 +42,7 @@
     import config from '../config.js';
     import axios from 'axios';
     import {eventBus} from '../main.js';
+    import {mapState, mapActions} from 'vuex';
 
     export default {
 
@@ -57,7 +58,6 @@
             return {
                 stompClient: {},
                 csrf: "",
-                auth: {},
                 subscribed: [],
                 directMessageSubscriptions: []
             }
@@ -175,8 +175,14 @@
                     }));
 
                 eventBus.$emit('directChatRequest', {value: {username: username, channel: unique}});
-            }
+            },
+            ...mapActions({
+                fetchUser: 'AUTHSTORE_FETCH_USER' // map `this.fetchUser()` to `this.$store.dispatch('AUTHSTORE_FETCH_AUTH')`
+            })
         },
+        computed: mapState({
+            auth: state => state.authStore.auth
+        }),
         created() {
 
             eventBus.$on('disconnectUser', (data) => {
@@ -200,11 +206,8 @@
             eventBus.$on('connect', () => this.connect());
             eventBus.$on('disconnectStomp', () => this.disconnect());
             eventBus.$on('send', (data) => this.sendMessage(data.value.from, data.value.msg, data.value.channel, data.value.color));
-            eventBus.$on('auth', (data) => this.auth = data.value);
 
-            axios.get('api/user')
-                .then(res => eventBus.$emit('auth', {value: res.data}))
-                .catch(err => console.log("Not logged in"));
+            this.fetchUser();
 
             this.csrf = config.getCsrfHeader();
             eventBus.$emit('connect');
