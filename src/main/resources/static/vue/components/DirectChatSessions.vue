@@ -38,34 +38,16 @@
 <script>
 
     import {eventBus} from '../main.js';
-    import {mapState} from 'vuex';
+    import {mapState, mapGetters, mapActions} from 'vuex';
 
     export default {
-        data() {
-            return {
-                directChatSessions: []
-            }
-        },
         methods: {
+            ...mapActions({
+               addDirectChatSession: 'chat/addDirectChatSession'
+            }),
             closeDirectChatSession(session) {
                 console.log('closing window');
                 session.isHidden = true;
-            },
-            handleDirectMessage(data) {
-                let author = JSON.parse(data.body).from;
-                let text = JSON.parse(data.body).text;
-                let channel = JSON.parse(data.body).channel;
-                let time = JSON.parse(data.body).time;
-                const message = {
-                    'author': author,
-                    'text': text,
-                    'channel': channel,
-                    'time': time
-                };
-
-                let session = this.directChatSessions.filter(s => s.directChatChannel == channel.name)[0];
-                session.directChatMessages.push(message);
-                session.isHidden = false;
             },
             sendDirectTextMessage(session) {
                 eventBus.$emit('sendDirectTextMessage', {
@@ -75,18 +57,6 @@
                     }
                 });
                 session.directChatInputText = "";
-            },
-            handleDirectChatRequest(data) {
-                //{value: {username: username, channel: unique}}
-                this.directChatSessions.push({
-                    directChatUsernames: [data.value.username, this.auth.name],
-                    directChatChannel: data.value.channel,
-                    directChatMessages: [],
-                    directChatInputText: "",
-                    showDirectChat: false,
-                    visible: true,
-                    isHidden: false
-                });
             },
             handleTryStartDirectChat(data) {
                 const username = data.value;
@@ -98,21 +68,9 @@
                     eventBus.$emit('directChatRequestInvocation', {value: username});
                 }
                 setTimeout(() => this.$scrollTo(this.$refs.directChatRef, 500), 100);
-            },
-            hasExistingChat(username) {
-                for (let i = 0; i < this.directChatSessions.length; i++) {
-                    for (let j = 0; j < this.directChatSessions[i].directChatUsernames.length; j++) {
-                        if (this.directChatSessions[i].directChatUsernames[j] == username) {
-                            return this.directChatSessions[i];
-                        }
-                    }
-                }
-                return undefined;
             }
         },
         created() {
-            eventBus.$on('handleDirectMessage', this.handleDirectMessage);
-            eventBus.$on('directChatRequest', this.handleDirectChatRequest);
             eventBus.$on('tryStartDirectChat', this.handleTryStartDirectChat);
 
             eventBus.$on('connected', (data) => {
@@ -120,21 +78,14 @@
                     this.directChatSessions = [];
                 }
             });
-
-            eventBus.$on('disconnectUser', (data) => {
-                const user = data.value.body;
-                for (var i = 0; i < this.directChatSessions.length; i++) {
-                    if (this.directChatSessions[i].directChatUsernames.indexOf(user) > -1) {
-                        this.directChatSessions.splice(i, 1);
-                        console.log('Closed direct chat session')
-                        break;
-                    }
-                }
-            });
         },
         computed: {
+            ...mapGetters({
+                hasExistingChat: 'chat/hasExistingChat'
+            }),
             ...mapState({
-                auth: state => state.auth
+                auth: state => state.auth,
+                directChatSessions: state => state.chat.directChatSessions
             })
         }
     }

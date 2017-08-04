@@ -3,7 +3,13 @@ import {
     CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS,
     CHATSTORE_SET_CHANNEL_PARTICIPANTS,
     CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS,
-    CHATSTORE_SET_CHANNELS
+    CHATSTORE_SET_CHANNELS,
+    CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION,
+    CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER,
+    CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER,
+    CHATSTORE_ADD_DIRECT_MESSAGE,
+    CHATSTORE_ADD_DIRECT_CHAT_SESSION,
+    CHATSTORE_SET_DIRECT_CHAT_SESSIONS
 } from './mutation-types.js';
 import axios from 'axios';
 
@@ -12,7 +18,9 @@ export default {
     state: {
         channels: [],
         channelSubscriptions: [],
-        channelParticipants: []
+        channelParticipants: [],
+        directMessageSubscriptions: [],
+        directChatSessions: []
     },
     getters: {
         channelsTranscribe(state) {
@@ -56,6 +64,16 @@ export default {
             }
             return false;
         },
+        hasExistingChat: (state) => (username) => {
+            for (let i = 0; i < state.directChatSessions.length; i++) {
+                for (let j = 0; j < state.directChatSessions[i].directChatUsernames.length; j++) {
+                    if (state.directChatSessions[i].directChatUsernames[j] == username) {
+                        return state.directChatSessions[i];
+                    }
+                }
+            }
+            return undefined;
+        }
     },
     mutations: {
         [CHATSTORE_SET_CHANNELS](state, channels) {
@@ -72,6 +90,35 @@ export default {
         },
         [CHATSTORE_SET_CHANNEL_PARTICIPANTS](state, channelParticipants) {
             state.channelParticipants = channelParticipants;
+        },
+        [CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION](state, subscription){
+            state.directMessageSubscriptions.push(subscription);
+        },
+        [CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER](state, user){
+            for (let i = 0; i < state.directMessageSubscriptions.length; i++) {
+                if (state.directMessageSubscriptions[i].users.indexOf(user) > -1) {
+                    state.directMessageSubscriptions[i].unsubscribe();
+                }
+            }
+        },
+        [CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER](state, user){
+            for (let i = 0; i < state.directChatSessions.length; i++) {
+                if (state.directChatSessions[i].directChatUsernames.indexOf(user) > -1) {
+                    state.directChatSessions.splice(i, 1);
+                    break;
+                }
+            }
+        },
+        [CHATSTORE_ADD_DIRECT_CHAT_SESSION](state, session){
+            state.directChatSessions.push(session);
+        },
+        [CHATSTORE_SET_DIRECT_CHAT_SESSIONS](state, sessions){
+            state.directChatSessions = sessions;
+        },
+        [CHATSTORE_ADD_DIRECT_MESSAGE](state, message){
+            let session = state.directChatSessions.filter(s => s.directChatChannel == message.channel.name)[0];
+            session.directChatMessages.push(message);
+            session.isHidden = false;
         }
     },
     actions: {
@@ -86,8 +133,8 @@ export default {
                 for (let i = 0; i < state.channelSubscriptions[0].endpoints.length; i++) {
                     state.channelSubscriptions[0].endpoints[i].unsubscribe();
                 }
-                dispatch(CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS, []);
-                dispatch(CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS);
+                dispatch('setChannelSubscriptions', []);
+                dispatch('clearChannelParticipants');
             }
         },
         setChannelParticipants({commit}, channelParticipants) {
@@ -100,6 +147,33 @@ export default {
             axios.get('api/channel')
                 .then(res => commit(CHATSTORE_SET_CHANNELS, res.data))
                 .catch(err => commit(CHATSTORE_SET_CHANNELS, []));
+        },
+        addDirectMessageSubscription({commit}, subscription){
+            commit(CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION, subscription);
+        },
+        addDirectChatSession({commit}, session){
+            commit(CHATSTORE_ADD_DIRECT_CHAT_SESSION, session);
+        },
+        setDirectChatSessions({commit}, sessions){
+            commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, sessions);
+        },
+        disconnectUser({commit}, user){
+            commit(CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER, user);
+            commit(CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER, user);
+        },
+        handleDirectMessage({commit}, data){
+            let author = JSON.parse(data.body).from;
+            let text = JSON.parse(data.body).text;
+            let channel = JSON.parse(data.body).channel;
+            let time = JSON.parse(data.body).time;
+            const message = {
+                'author': author,
+                'text': text,
+                'channel': channel,
+                'time': time
+            };
+
+            commit(CHATSTORE_ADD_DIRECT_MESSAGE, message);
         }
     }
 };

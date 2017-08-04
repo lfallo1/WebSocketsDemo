@@ -61,10 +61,6 @@
                 channelSubscriptions: state => state.chat.channelSubscriptions,
                 channelParticipants: state => state.chat.channelParticipants
             })
-        },
-        created() {
-            eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
-            eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
         }
     }
 
