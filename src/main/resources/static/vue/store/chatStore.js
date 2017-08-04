@@ -69,6 +69,9 @@ export default {
         },
         [CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS](state) {
             state.channelParticipants = [];
+        },
+        [CHATSTORE_SET_CHANNEL_PARTICIPANTS](state, channelParticipants) {
+            state.channelParticipants = channelParticipants;
         }
     },
     actions: {
@@ -83,8 +86,8 @@ export default {
                 for (let i = 0; i < state.channelSubscriptions[0].endpoints.length; i++) {
                     state.channelSubscriptions[0].endpoints[i].unsubscribe();
                 }
-                dispatch('setChannelSubscriptions', []);
-                dispatch('clearChannelParticipants');
+                dispatch(CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS, []);
+                dispatch(CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS);
             }
         },
         setChannelParticipants({commit}, channelParticipants) {

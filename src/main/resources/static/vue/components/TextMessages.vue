@@ -109,8 +109,8 @@
                 if (this.stompClient.subscribe) {
 
                     //i don't think its a good idea to allow multiple sessions simultaneously.
-                    if (this.subscribed.length > 0) {
-                        const currentSubscription = this.subscribed[0];
+                    if (this.channelSubscriptions.length > 0) {
+                        const currentSubscription = this.channelSubscriptions[0];
                         this.unsubscribeFromChannel(currentSubscription.channel);
                     }
 
@@ -143,7 +143,7 @@
                 this.clearChannelParticipants();
             },
             sendMessage(from, msg, channel, color) {
-                this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
+                this.stompClient.send("/app/shared/" + this.channelSubscriptions[0].channel.channelId, {},
                     JSON.stringify({'from': from, 'text': msg, 'channel': channel, 'color': color}));
             },
             directChatStart(username) {
@@ -170,7 +170,8 @@
                 fetchUser: 'fetchUser',
                 setChannelParticipants: 'chat/setChannelParticipants',
                 setChannelSubscriptions: 'chat/setChannelSubscriptions',
-                clearChannelParticipants: 'chat/clearChannelParticipants'
+                clearChannelParticipants: 'chat/clearChannelParticipants',
+                addChannelSubscription: 'chat/addChannelSubscription'
             })
         },
         computed: {
@@ -195,7 +196,7 @@
             eventBus.$on('sendDirectTextMessage', (data) => this.sendDirectTextMessage(data.value.text, data.value.channel));
             eventBus.$on('directChatRequestInvocation', (data) => this.directChatStart(data.value));
 
-            eventBus.$on('toggleSubscription', (data) => this.toggleSubscription(data.value.channel, data.value.shouldTranscribe));
+            eventBus.$on('toggleSubscription', (data) => this.toggleSubscription(data.value.channel));
 
             eventBus.$on('connect', () => this.connect());
             eventBus.$on('disconnectStomp', () => this.disconnect());
