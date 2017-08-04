@@ -3,10 +3,10 @@
         <div id="input-container" class="input-group" v-if="auth.name && isTranscriber">
                 <span id="toggle-color-button" class="input-group-addon" @click="toggleColor"><span
                         class="glyphicon glyphicon-retweet"></span>&nbsp;Change sender</span>
-            <input class="form-control" :disabled="subscribed.length == 0" type="text" @keydown="nextCharacter"
+            <input class="form-control" :disabled="channelSubscriptions.length == 0" type="text" @keydown="nextCharacter"
                    v-model="currentMessage"></input>
             <span id="send-button" :class="'input-group-addon btn bg-' + textColor"
-                  :disabled="subscribed.length == 0" @click="carriageReturn">Send</span>
+                  :disabled="channelSubscriptions.length == 0" @click="carriageReturn">Send</span>
         </div>
         <div id="current-line" :class="'text-' + currentLine.color">{{currentLine.value}}</div>
     </div>
@@ -15,23 +15,21 @@
 <script>
 
     import {eventBus} from '../main.js';
-    import {mapState} from 'vuex';
+    import {mapState, mapGetters} from 'vuex';
 
-    export default{
-        data(){
+    export default {
+        data() {
             return {
                 currentMessage: "",
                 currentLine: {value: "", channel: "", color: ""},
-                subscribed: [],
-                color: false,
-                channelParticipants: []
+                color: false
             }
         },
         methods: {
             send(from, msg) {
                 const channel = {
-                    channelId: this.subscribed[0].channel.channelId,
-                    name: this.subscribed[0].channel.name
+                    channelId: this.channelSubscriptions[0].channel.channelId,
+                    name: this.channelSubscriptions[0].channel.name
                 };
                 eventBus.$emit('send', {value: {from: from, msg: msg, channel: channel, color: this.textColor}});
             },
@@ -93,32 +91,21 @@
             }
         },
         computed: {
-            isTranscriber() {
-                if (!this.auth.name) {
-                    return false;
-                }
-
-                for (let i = 0; i < this.channelParticipants.length; i++) {
-                    if (this.channelParticipants[i].transcriber && this.channelParticipants[i].user.name == this.auth.name) {
-                        return true;
-                    }
-                }
-                return false;
-            },
+            ...mapState({
+                auth: state => state.auth,
+                channelSubscriptions: state => state.chat.channelSubscriptions,
+                channelParticipants: state => state.chat.channelParticipants
+            }),
+            ...mapGetters({
+                isTranscriber: 'chat/isTranscriber'
+            }),
             textColor() {
                 return this.color ? 'info' : 'warning'
-            },
-            ...mapState({
-                auth: state => state.authStore.auth
-            })
+            }
         },
-        created(){
+        created() {
             //setup event bus handlers
             eventBus.$on('toggleColor', (data) => this.color = data.value);
-            eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
-            eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
-            eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
-            eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
             eventBus.$on('showMessage', (data) => this.showMessage(data.value));
         }
     }
@@ -130,6 +117,7 @@
         background: #555;
         color: #eee;
     }
+
     #current-line {
         padding: 12px;
         font-weight: bold;
@@ -145,11 +133,13 @@
         padding-left: 10px;
         font-weight: bold;
     }
-    #input-container{
+
+    #input-container {
         width: 75%;
         margin: 0px auto;
         margin-top: 25px;
     }
+
     #chat-window input:focus {
         outline-width: 0;
     }

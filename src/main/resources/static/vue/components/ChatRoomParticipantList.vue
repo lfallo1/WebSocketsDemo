@@ -16,13 +16,13 @@
             </div>
 
             <div id="no-transcriber-warning" class="alert alert-danger text-center"
-                 v-if="subscribed.length > 0 && !hasTranscriber">
+                 v-if="channelSubscriptions.length > 0 && !hasTranscriber">
                 <span class="glyphicon glyphicon-info-sign"></span>&nbsp;
                 There is not currently a transcriber for this channel
             </div>
 
             <div id="already-subscriber-warning" class="alert alert-warning text-center"
-                 v-if="subscribed.length > 0 && otherTranscriberExists">
+                 v-if="channelSubscriptions.length > 0 && otherTranscriberExists">
                 <span class="glyphicon glyphicon-info-sign">&nbsp;</span>
                 A logged in user is already transcribing on this channel. You will be able to listen, but not transcribe
             </div>
@@ -33,52 +33,36 @@
 <script>
 
     import {eventBus} from '../main.js';
-    import {mapState} from 'vuex';
+    import {mapState, mapActions, mapGetters} from 'vuex';
 
     export default {
         data() {
             return {
-                subscribed: [],
-                channelParticipants: [],
                 stompClient: {}
             }
         },
         methods: {
+            ...mapActions({
+                setChannelSubscriptions: 'chat/setChannelSubscriptions',
+                addChannelSubscription: 'chat/addChannelSubscription'
+            }),
             directChatRequest(username) {
                 eventBus.$emit('tryStartDirectChat', {value: username});
             }
         },
         computed: {
-            loggedInParticipants() {
-                return this.channelParticipants.filter(p => p.user);
-            },
-            hasTranscriber() {
-                for (let i = 0; i < this.channelParticipants.length; i++) {
-                    if (this.channelParticipants[i].transcriber) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            otherTranscriberExists() {
-                if (this.auth.name && this.hasTranscriber) {
-                    for (let i = 0; i < this.channelParticipants.length; i++) {
-                        if (this.channelParticipants[i].user && this.channelParticipants[i].user.name == this.auth.name
-                            && this.channelParticipants[i].authenticatedToTranscribe
-                            && !this.channelParticipants[i].transcriber) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            },
+            ...mapGetters({
+                loggedInParticipants: 'chat/loggedInParticipants',
+                hasTranscriber: 'chat/hasTranscriber',
+                otherTranscriberExists: 'chat/otherTranscriberExists'
+            }),
             ...mapState({
-                auth: state => state.authStore.auth
+                auth: state => state.auth,
+                channelSubscriptions: state => state.chat.channelSubscriptions,
+                channelParticipants: state => state.chat.channelParticipants
             })
         },
         created() {
-            eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
-            eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
             eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
             eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
         }

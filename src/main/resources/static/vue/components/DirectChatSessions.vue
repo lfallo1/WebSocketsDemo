@@ -132,9 +132,11 @@
                 }
             });
         },
-        computed: mapState({
-            auth: state => state.authStore.auth
-        })
+        computed: {
+            ...mapState({
+                auth: state => state.auth
+            })
+        }
     }
 </script>
 

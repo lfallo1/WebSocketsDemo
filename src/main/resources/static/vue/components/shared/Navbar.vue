@@ -63,22 +63,22 @@
     export default {
         data() {
             return {
-                subscribed: [],
                 connected: false,
                 navbarDropdownIsOpen: false,
                 navCollapsed: true,
-                channelParticipants: [],
                 usersConnected: []
             }
         },
         computed: {
             subscribedText() {
                 //they will have multiple subscriptions on same channel. so get unique list for display purposes
-                const arr = config.unique(this.subscribed);
-                return this.subscribed.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + this.channelParticipants.length + ' total) ' : '';
+                const arr = config.unique(this.channelSubscriptions);
+                return this.channelSubscriptions.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + this.channelParticipants.length + ' total) ' : '';
             },
             ...mapState({
-                auth: state => state.authStore.auth
+                auth: state => state.auth,
+                channelSubscriptions: state => state.chat.channelSubscriptions,
+                channelParticipants: state => state.chat.channelParticipants
             })
         },
         methods: {
@@ -89,28 +89,13 @@
             connect() {
                 eventBus.$emit('connect');
             },
-            handleUnsubscribe(data) {
-                for (let i = 0; i < this.subscribed.length; i++) {
-                    if (this.subscribed[i].channel.channdlId === data.value.channelId) {
-                        this.subscribed.splice(i, 1);
-                        return;
-                    }
-                }
-            },
             toggleNavCollapsed() {
                 this.navCollapsed = !this.navCollapsed
             }
         },
         created() {
             eventBus.$on('connected', (data) => this.connected = data.value);
-            eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
-            eventBus.$on('unsubscribe', this.handleUnsubscribe);
-            eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
 //            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
-
-            eventBus.$on('channelParticipants', (data) => this.channelParticipants = data.value);
-            eventBus.$on('clearChannelParticipants', (data) => this.channelParticipants = []);
-
             eventBus.$on('usersConnected', (data) => this.usersConnected = JSON.parse(data.value.body));
         }
     }

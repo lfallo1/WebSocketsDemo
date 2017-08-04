@@ -58,7 +58,6 @@
             return {
                 stompClient: {},
                 csrf: "",
-                subscribed: [],
                 directMessageSubscriptions: []
             }
         },
@@ -106,22 +105,13 @@
 
                 });
             },
-            handleUnsubscribe(data) {
-                const channel = data.value;
-                const subscription = this.subscribed.filter(s => s.channel.channelId == channel.channelId)[0];
-                for (let i = 0; i < subscription.endpoints.length; i++) {
-                    subscription.endpoints[i].unsubscribe();
-                }
-                eventBus.$emit('updateSubscribed', {value: []});
-                eventBus.$emit('clearChannelParticipants');
-            },
             toggleSubscription(channel, shouldTranscribe) {
                 if (this.stompClient.subscribe) {
 
                     //i don't think its a good idea to allow multiple sessions simultaneously.
                     if (this.subscribed.length > 0) {
                         const currentSubscription = this.subscribed[0];
-                        eventBus.$emit('unsubscribe', {value: currentSubscription.channel});
+                        this.unsubscribeFromChannel(currentSubscription.channel);
                     }
 
                     let subscription = {
@@ -132,7 +122,7 @@
                     let sub = this.stompClient.subscribe('/topic/channelcount/' + channel.channelId, (data) => {
                         console.log("#participants has been updated", data);
                         let channelParticipants = JSON.parse(data.body)
-                        eventBus.$emit('channelParticipants', {value: channelParticipants});
+                        this.setChannelParticipants(channelParticipants);
                     });
                     subscription.endpoints.push(sub)
 
@@ -141,7 +131,7 @@
                     });
                     subscription.endpoints.push(sub)
 
-                    eventBus.$emit('addSubscription', {value: subscription});
+                    this.addChannelSubscription(subscription);
                 }
             },
             disconnect() {
@@ -149,8 +139,8 @@
                     this.stompClient.disconnect();
                 }
                 eventBus.$emit('connected', {value: false});
-                eventBus.$emit('updateSubscribed', {value: []});
-                eventBus.$emit('clearChannelParticipants');
+                this.setChannelSubscriptions([]);
+                this.clearChannelParticipants();
             },
             sendMessage(from, msg, channel, color) {
                 this.stompClient.send("/app/shared/" + this.subscribed[0].channel.channelId, {},
@@ -177,12 +167,19 @@
                 eventBus.$emit('directChatRequest', {value: {username: username, channel: unique}});
             },
             ...mapActions({
-                fetchUser: 'AUTHSTORE_FETCH_USER' // map `this.fetchUser()` to `this.$store.dispatch('AUTHSTORE_FETCH_AUTH')`
+                fetchUser: 'fetchUser',
+                setChannelParticipants: 'chat/setChannelParticipants',
+                setChannelSubscriptions: 'chat/setChannelSubscriptions',
+                clearChannelParticipants: 'chat/clearChannelParticipants'
             })
         },
-        computed: mapState({
-            auth: state => state.authStore.auth
-        }),
+        computed: {
+            ...mapState({
+                auth: state => state.auth,
+                channelSubscriptions: state => state.chat.channelSubscriptions,
+                channelParticipants: state => state.chat.channelParticipants
+            })
+        },
         created() {
 
             eventBus.$on('disconnectUser', (data) => {
@@ -198,10 +195,7 @@
             eventBus.$on('sendDirectTextMessage', (data) => this.sendDirectTextMessage(data.value.text, data.value.channel));
             eventBus.$on('directChatRequestInvocation', (data) => this.directChatStart(data.value));
 
-            eventBus.$on('addSubscription', (data) => this.subscribed.push(data.value));
-            eventBus.$on('updateSubscribed', (data) => this.subscribed = data.value);
             eventBus.$on('toggleSubscription', (data) => this.toggleSubscription(data.value.channel, data.value.shouldTranscribe));
-            eventBus.$on('unsubscribe', this.handleUnsubscribe);
 
             eventBus.$on('connect', () => this.connect());
             eventBus.$on('disconnectStomp', () => this.disconnect());
