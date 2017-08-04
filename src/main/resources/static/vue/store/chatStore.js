@@ -9,9 +9,11 @@ import {
     CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER,
     CHATSTORE_ADD_DIRECT_MESSAGE,
     CHATSTORE_ADD_DIRECT_CHAT_SESSION,
-    CHATSTORE_SET_DIRECT_CHAT_SESSIONS
+    CHATSTORE_SET_DIRECT_CHAT_SESSIONS,
+    CHATSTORE_SET_CONNECTED
 } from './mutation-types.js';
 import axios from 'axios';
+import config from '../config.js';
 
 export default {
     namespaced: true,
@@ -73,9 +75,17 @@ export default {
                 }
             }
             return undefined;
+        },
+        subscribeText(state){
+            //they will have multiple subscriptions on same channel. so get unique list for display purposes
+            const arr = config.unique(state.channelSubscriptions);
+            return state.channelSubscriptions.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + state.channelParticipants.length + ' total) ' : '';
         }
     },
     mutations: {
+        [CHATSTORE_SET_CONNECTED](state, value) {
+            state.connected = value;
+        },
         [CHATSTORE_SET_CHANNELS](state, channels) {
             state.channels = channels;
         },
@@ -122,6 +132,9 @@ export default {
         }
     },
     actions: {
+        setConnected({commit}, isConnected){
+            commit(CHATSTORE_SET_CONNECTED, isConnected);
+        },
         setChannelSubscriptions({commit}, channelSubscriptions) {
             commit(CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS, channelSubscriptions);
         },

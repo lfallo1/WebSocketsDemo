@@ -70,11 +70,9 @@
             }
         },
         computed: {
-            subscribedText() {
-                //they will have multiple subscriptions on same channel. so get unique list for display purposes
-                const arr = config.unique(this.channelSubscriptions);
-                return this.channelSubscriptions.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + this.channelParticipants.length + ' total) ' : '';
-            },
+            ...mapGetters({
+                subscribeText: 'chat/subscribeText'
+            }),
             ...mapState({
                 auth: state => state.auth,
                 channelSubscriptions: state => state.chat.channelSubscriptions,
@@ -82,21 +80,12 @@
             })
         },
         methods: {
-            //extract to util file
-            disconnect() {
-                eventBus.$emit('disconnect');
-            },
-            connect() {
-                eventBus.$emit('connect');
-            },
+            ...mapActions({
+                setConnected: 'chat/setConnected'
+            }),
             toggleNavCollapsed() {
                 this.navCollapsed = !this.navCollapsed
             }
-        },
-        created() {
-            eventBus.$on('connected', (data) => this.connected = data.value);
-//            eventBus.$on('totalusers', (data) => this.totalusers = data.value);
-            eventBus.$on('usersConnected', (data) => this.usersConnected = JSON.parse(data.value.body));
         }
     }
 

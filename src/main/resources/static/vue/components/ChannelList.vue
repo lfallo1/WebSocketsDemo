@@ -65,10 +65,6 @@
             }
         },
         created() {
-
-            eventBus.$on('connected', (data) => this.connected = data.value);
-            eventBus.$on('disconnect', () => this.disconnect());
-
             this.fetchChannels();
             this.csrf = config.getCsrfHeader();
         }

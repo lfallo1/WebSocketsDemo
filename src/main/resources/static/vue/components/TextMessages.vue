@@ -79,7 +79,7 @@
                     this.stompClient.subscribe('/topic/users/connected', (data) => eventBus.$emit('usersConnected', {value: data}));
                     this.stompClient.subscribe('/topic/users/disconnect', (data) => eventBus.$emit('disconnectUser', {value: data}));
 
-                    eventBus.$emit('connected', {value: true});
+                    this.setConnected(true);
                     console.log('Connected: ' + frame);
 
                     if (this.auth.name) {
@@ -138,7 +138,7 @@
                 if (this.stompClient != null) {
                     this.stompClient.disconnect();
                 }
-                eventBus.$emit('connected', {value: false});
+                this.disconnect();
                 this.setChannelSubscriptions([]);
                 this.clearChannelParticipants();
             },

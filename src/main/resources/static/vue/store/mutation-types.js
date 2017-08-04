@@ -10,3 +10,4 @@ export const CHATSTORE_SET_DIRECT_CHAT_SESSIONS = 'chat/setDirectChatSessions';
 export const CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER = 'chat/unsubscribeFromDirectMessageSubscriptionByUser'
 export const CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER = 'chat/removeDirectChatSessionByUser'
 export const CHATSTORE_ADD_DIRECT_MESSAGE = 'chat/addDirectMessage';
+export const CHATSTORE_SET_CONNECTED = 'chat/setConnected';
