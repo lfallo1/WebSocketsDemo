@@ -342,11 +342,11 @@ export default {
             if (state.channelSubscriptions.length > 0) {
                 for (let i = 0; i < state.channelSubscriptions[0].endpoints.length; i++) {
                     state.channelSubscriptions[0].endpoints[i].unsubscribe();
-                    Vue.toasted.warning('unsubscribed from ' + state.channelSubscriptions[0].channel.name, {
-                        position: 'bottom-right',
-                        icon: 'block'
-                    }).goAway(3500);
                 }
+                Vue.toasted.show('unsubscribed from ' + state.channelSubscriptions[0].channel.name, {
+                    position: 'bottom-right',
+                    icon: 'block'
+                }).goAway(3500);
                 dispatch('setChannelSubscriptions', []);
                 dispatch('clearChannelParticipants');
             }
