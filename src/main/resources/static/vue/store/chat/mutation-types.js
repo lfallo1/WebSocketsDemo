@@ -1,3 +1,4 @@
+export const CHATSTORE_STOMP_CLIENT_CONNECT = 'chat/stompClientConnect';
 export const CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS = 'chat/setChannelSubscriptions';
 export const CHATSTORE_ADD_CHANNEL_SUBSCRIPTION = 'chat/addChannelSubscription';
 export const CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS = 'chat/clearChannelParticipants';

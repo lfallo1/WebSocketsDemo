@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "axios": "^0.16.2",
+    "bootstrap": "^3.3.7",
     "modal-vue": "0.0.3",
     "net": "^1.0.2",
     "stompjs": "^2.3.3",
+    "velocity-animate": "^1.5.0",
     "vue": "^2.3.3",
+    "vue-easy-toast": "^1.0.2",
     "vue-scrollto": "^2.7.2"
   },
   "devDependencies": {

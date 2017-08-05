@@ -6,7 +6,7 @@
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : channelSubscriptions.filter(s=>s.channel == channel).length > 0}"
                             class="btn btn-default"
-                            @click="toggleSubscription(channel)" v-for="channel in channelsListen">{{channel.name}}
+                            @click="subscribeToChannel(channel)" v-for="channel in channelsListen">{{channel.name}}
                     </button>
                 </div>
             </div>
@@ -16,7 +16,7 @@
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : channelSubscriptions.filter(s=>s.channel == channel).length > 0}"
                             class="btn btn-default"
-                            @click="toggleSubscription(channel)" v-for="channel in channelsTranscribe">
+                            @click="subscribeToChannel(channel)" v-for="channel in channelsTranscribe">
                         {{channel.name}}
                     </button>
                 </div>
@@ -49,7 +49,7 @@
         methods: {
             ...mapActions({
                 unsubscribeFromChannel: 'chat/unsubscribeFromChannel',
-                toggleSubscription: 'chat/toggleSubscription',
+                subscribeToChannel: 'chat/subscribeToChannel',
                 disconnect: 'chat/disconnect',
                 fetchChannels: 'chat/fetchChannels'
             })

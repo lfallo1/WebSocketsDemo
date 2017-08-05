@@ -16,8 +16,12 @@
 <script>
 
     import {mapState} from 'vuex';
+    import {eventBus} from '../main.js';
 
     export default {
+        created(){
+            eventBus.$on('transcribeScroll', () => this.$scrollTo(this.$refs.scrollTarget, 200));
+        },
         computed:{
             ...mapState({
                 messages: state => state.chat.messages
