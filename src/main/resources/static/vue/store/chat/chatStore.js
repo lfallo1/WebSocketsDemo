@@ -15,7 +15,8 @@ import {
     CHATSTORE_ADD_MESSAGE,
     CHATSTORE_SET_USERS_CONNECTED,
     CHATSTORE_UPDATE_CURRENT_MESSAGE,
-    CHATSTORE_CLOSE_DIRECT_CHAT_SESSION
+    CHATSTORE_CLOSE_DIRECT_CHAT_SESSION,
+    CHATSTORE_SET_CURRENT_LINE
 } from './mutation-types.js';
 import axios from 'axios';
 import config from '../../config.js';
@@ -160,6 +161,9 @@ export default {
         },
         [CHATSTORE_CLOSE_DIRECT_CHAT_SESSION](state, session){
             session.isHidden = true;
+        },
+        [CHATSTORE_SET_CURRENT_LINE](state, currentLine){
+            state.currentLine = currentLine;
         }
     },
     actions: {
@@ -231,6 +235,7 @@ export default {
             commit(CHATSTORE_SET_CONNECTED, false);
             dispatch('setChannelSubscriptions',[]);
             dispatch('clearChannelParticipants');
+            commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, []);
         },
         sendMessage({state}, payload) {
             state.stompClient.send("/app/shared/" + state.channelSubscriptions[0].channel.channelId, {},
@@ -244,31 +249,30 @@ export default {
             let time = JSON.parse(data.body).time;
             console.log("received message from channel: " + channel.toString());
 
-            //TODO *** MODIFYING STATE DIRECTLY ---- REFACTOR
             if (value.toLowerCase() == 'enter') {
                 if (state.currentLine.value) {
-                    state.currentLine.channel = channel.name;
-                    state.currentLine.time = time;
-                    state.currentLine.author = author;
+                    dispatch('setCurrentLine', {value: state.currentLine.value, author: channel.name, time: time, author: author});
                     dispatch('addMessage',{data: state.currentLine, textClass: color});
-                    state.currentLine = {value: "", channel: "", author: "", time: undefined};
-                    state.currentMessage = "";
+                    dispatch('setCurrentLine', {value: "", channel: "", author: "", time: undefined});
+                    dispatch('updateCurrentMessage', "");
                 }
                 dispatch('toggleColor');
             }
             else if (value.toLowerCase() == 'backspace') {
                 if (state.currentLine.value.length > 0) {
-                    state.currentLine.color = color;
-                    state.currentLine.value = state.currentLine.value.substring(0, state.currentLine.value.length - 1)
+                    const value = state.currentLine.value.substring(0, state.currentLine.value.length - 1);
+                    dispatch('setCurrentLine', {value: value, color: color});
                 }
             } else {
-                state.currentLine.color = color;
-                state.currentLine.value += value;
+                dispatch('setCurrentLine', {color: color, value: state.currentLine.value + value});
             }
 
         },
         addMessage({state, commit}, payload){
             commit(CHATSTORE_ADD_MESSAGE, payload);
+        },
+        setCurrentLine({commit}, payload){
+            commit('chat/setCurrentLine', {value: payload.value, color: payload.color, time: payload.time, author: payload.author});
         },
         toggleColor({commit}){
             commit(CHATSTORE_TOGGLE_COLOR);

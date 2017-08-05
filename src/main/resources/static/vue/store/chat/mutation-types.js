@@ -15,3 +15,4 @@ export const CHATSTORE_ADD_MESSAGE = 'chat/addMessage';
 export const CHATSTORE_SET_USERS_CONNECTED = 'chat/setUsersConnected';
 export const CHATSTORE_UPDATE_CURRENT_MESSAGE = 'chat/updateCurrentMessage';
 export const CHATSTORE_CLOSE_DIRECT_CHAT_SESSION = 'chat/closeDirectChatSession';
+export const CHATSTORE_SET_CURRENT_LINE = 'chat/setCurrentLine';
