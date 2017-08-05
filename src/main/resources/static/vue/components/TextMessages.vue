@@ -56,27 +56,8 @@
         methods: {
             ...mapActions({
                 setCsrf: 'setCsrf',
-                sendMessage: 'chat/sendMessage',
                 connect: 'chat/connect',
-                disconnect: 'chat/disconnect',
-                toggleSubscription: 'chat/toggleSubscription',
-                setConnected: 'chat/setConnected',
                 fetchUser: 'fetchUser',
-                setChannelParticipants: 'chat/setChannelParticipants',
-                setChannelSubscriptions: 'chat/setChannelSubscriptions',
-                clearChannelParticipants: 'chat/clearChannelParticipants',
-                addChannelSubscription: 'chat/addChannelSubscription',
-                addDirectMessageSubscription: 'chat/addDirectMessageSubscription',
-                disconnectUser: 'chat/disconnectUser',
-                handleDirectMessage: 'chat/handleDirectMessage',
-                addDirectChatSession: 'chat/addDirectChatSession'
-            })
-        },
-        computed: {
-            ...mapState({
-                auth: state => state.auth,
-                channelSubscriptions: state => state.chat.channelSubscriptions,
-                channelParticipants: state => state.chat.channelParticipants
             })
         },
         created() {
