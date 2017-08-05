@@ -31,16 +31,9 @@
 
 <script>
 
-    import {eventBus} from '../main.js';
-    import config from '../config.js';
     import {mapState, mapActions, mapGetters} from 'vuex';
 
     export default {
-        data() {
-            return {
-                connected: false,
-            }
-        },
         computed: {
             ...mapGetters({
                 channelsListen: 'chat/channelsListen',
@@ -49,24 +42,20 @@
             ...mapState({
                 auth: state => state.auth,
                 channelSubscriptions: state => state.chat.channelSubscriptions,
-                channels: state => state.chat.channels
+                channels: state => state.chat.channels,
+                connected: state => state.chat.connected
             })
         },
         methods: {
             ...mapActions({
                 unsubscribeFromChannel: 'chat/unsubscribeFromChannel',
+                toggleSubscription: 'chat/toggleSubscription',
+                disconnect: 'chat/disconnect',
                 fetchChannels: 'chat/fetchChannels'
-            }),
-            toggleSubscription(channel) {
-                eventBus.$emit('toggleSubscription', {value: {channel: channel}})
-            },
-            disconnect() {
-                eventBus.$emit('disconnectStomp');
-            }
+            })
         },
-        created() {
+        created(){
             this.fetchChannels();
-            this.csrf = config.getCsrfHeader();
         }
     }
 

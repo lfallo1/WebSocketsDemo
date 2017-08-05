@@ -37,47 +37,15 @@
 
 <script>
 
-    import {eventBus} from '../main.js';
     import {mapState, mapGetters, mapActions} from 'vuex';
 
     export default {
         methods: {
             ...mapActions({
-               addDirectChatSession: 'chat/addDirectChatSession'
-            }),
-            closeDirectChatSession(session) {
-                console.log('closing window');
-                session.isHidden = true;
-            },
-            sendDirectTextMessage(session) {
-                eventBus.$emit('sendDirectTextMessage', {
-                    value: {
-                        text: session.directChatInputText,
-                        channel: session.directChatChannel
-                    }
-                });
-                session.directChatInputText = "";
-            },
-            handleTryStartDirectChat(data) {
-                const username = data.value;
-                const session = this.hasExistingChat(username);
-                if (session) {
-                    session.isHidden = false;
-                }
-                else if (this.auth.name && username != this.auth.name) {
-                    eventBus.$emit('directChatRequestInvocation', {value: username});
-                }
-                setTimeout(() => this.$scrollTo(this.$refs.directChatRef, 500), 100);
-            }
-        },
-        created() {
-            eventBus.$on('tryStartDirectChat', this.handleTryStartDirectChat);
-
-            eventBus.$on('connected', (data) => {
-                if (!data.value) {
-                    this.directChatSessions = [];
-                }
-            });
+                addDirectChatSession: 'chat/addDirectChatSession',
+                closeDirectChatSession: 'chat/closeDirectChatSession',
+                sendDirectTextMessage: 'chat/sendDirectTextMessage'
+            })
         },
         computed: {
             ...mapGetters({

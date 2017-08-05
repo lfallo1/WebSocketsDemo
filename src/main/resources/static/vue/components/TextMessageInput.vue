@@ -14,24 +14,24 @@
 
 <script>
 
-    import {eventBus} from '../main.js';
-    import {mapState, mapGetters} from 'vuex';
+    import {mapState, mapGetters, mapActions} from 'vuex';
 
     export default {
-        data() {
-            return {
-                currentMessage: "",
-                currentLine: {value: "", channel: "", color: ""},
-                color: false
-            }
-        },
         methods: {
+            ...mapActions({
+                sendMessage: 'chat/sendMessage',
+                toggleColor: 'chat/toggleColor',
+                showMessage: 'chat/showMessage',
+                addMessage: 'chat/addMessage',
+                updateCurrentMessage: 'chat/updateCurrentMessage',
+                scroll: 'scroll'
+            }),
             send(from, msg) {
                 const channel = {
                     channelId: this.channelSubscriptions[0].channel.channelId,
                     name: this.channelSubscriptions[0].channel.name
                 };
-                eventBus.$emit('send', {value: {from: from, msg: msg, channel: channel, color: this.textColor}});
+                this.sendMessage({from: from, msg: msg, channel: channel, color: this.textColor});
             },
             nextCharacter(e) {
                 if (this.isCharacterKeyPress(e)) {
@@ -41,37 +41,6 @@
 
             carriageReturn() {
                 this.send(this.auth.name, 'enter');
-            },
-
-            showMessage(data) {
-                let author = JSON.parse(data.body).from;
-                let value = JSON.parse(data.body).text;
-                let color = JSON.parse(data.body).color;
-                let channel = JSON.parse(data.body).channel;
-                let time = JSON.parse(data.body).time;
-                console.log("received message from channel: " + channel.toString());
-                if (value.toLowerCase() == 'enter') {
-                    if (this.currentLine.value) {
-                        this.currentLine.channel = channel.name;
-                        this.currentLine.time = time;
-                        this.currentLine.author = author;
-                        eventBus.$emit('addMessage', {value: {data: this.currentLine, textClass: color}})
-                        this.currentLine = {value: "", channel: "", author: "", time: undefined};
-                        this.currentMessage = "";
-                        eventBus.$emit('scroll');
-                    }
-                    eventBus.$emit('toggleColor', {value: !this.color});
-                }
-                else if (value.toLowerCase() == 'backspace') {
-                    if (this.currentLine.value.length > 0) {
-                        this.currentLine.color = color;
-                        this.currentLine.value = this.currentLine.value.substring(0, this.currentLine.value.length - 1)
-                    }
-                } else {
-                    this.currentLine.color = color;
-                    this.currentLine.value += value;
-                }
-
             },
             isCharacterKeyPress(e) {
                 var keycode = e.keyCode;
@@ -85,28 +54,28 @@
                     (keycode > 218 && keycode < 223);   // [\]' (in order)
 
                 return valid;
-            },
-            toggleColor() {
-                eventBus.$emit('toggleColor', {value: !this.color});
             }
         },
         computed: {
+            currentMessage: {
+                get () {
+                    return this.$store.state.chat.currentMessage
+                },
+                set (value) {
+                    this.updateCurrentMessage(value);
+                }
+            },
             ...mapState({
                 auth: state => state.auth,
                 channelSubscriptions: state => state.chat.channelSubscriptions,
-                channelParticipants: state => state.chat.channelParticipants
+                channelParticipants: state => state.chat.channelParticipants,
+                color: state => state.chat.color,
+                currentLine: state => state.chat.currentLine
             }),
             ...mapGetters({
-                isTranscriber: 'chat/isTranscriber'
-            }),
-            textColor() {
-                return this.color ? 'info' : 'warning'
-            }
-        },
-        created() {
-            //setup event bus handlers
-            eventBus.$on('toggleColor', (data) => this.color = data.value);
-            eventBus.$on('showMessage', (data) => this.showMessage(data.value));
+                isTranscriber: 'chat/isTranscriber',
+                textColor: 'chat/textColor'
+            })
         }
     }
 </script>

@@ -56,31 +56,32 @@
 
 <script>
 
-    import {eventBus} from '../../main.js';
     import config from '../../config.js';
-    import {mapState} from 'vuex';
+    import {mapState, mapGetters, mapActions} from 'vuex';
 
     export default {
         data() {
             return {
-                connected: false,
                 navbarDropdownIsOpen: false,
-                navCollapsed: true,
-                usersConnected: []
+                navCollapsed: true
             }
         },
         computed: {
             ...mapGetters({
-                subscribeText: 'chat/subscribeText'
+                subscribedText: 'chat/subscribedText'
             }),
             ...mapState({
                 auth: state => state.auth,
                 channelSubscriptions: state => state.chat.channelSubscriptions,
-                channelParticipants: state => state.chat.channelParticipants
+                channelParticipants: state => state.chat.channelParticipants,
+                connected: state => state.chat.connected,
+                usersConnected: state => state.chat.usersConnected
             })
         },
         methods: {
             ...mapActions({
+                connect: 'chat/connect',
+                disconnect: 'chat/disconnect',
                 setConnected: 'chat/setConnected'
             }),
             toggleNavCollapsed() {

@@ -1,13 +1,2 @@
 export const ROOTSTORE_SET_AUTH = 'setAuth';
-export const CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS = 'chat/setChannelSubscriptions';
-export const CHATSTORE_ADD_CHANNEL_SUBSCRIPTION = 'chat/addChannelSubscription';
-export const CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS = 'chat/clearChannelParticipants';
-export const CHATSTORE_SET_CHANNELS = 'chat/setChannels';
-export const CHATSTORE_SET_CHANNEL_PARTICIPANTS = 'chat/setChannelParticipants';
-export const CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION = 'chat/addDirectMessageSubscription';
-export const CHATSTORE_ADD_DIRECT_CHAT_SESSION = 'chat/addDirectChatSession';
-export const CHATSTORE_SET_DIRECT_CHAT_SESSIONS = 'chat/setDirectChatSessions';
-export const CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER = 'chat/unsubscribeFromDirectMessageSubscriptionByUser'
-export const CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER = 'chat/removeDirectChatSessionByUser'
-export const CHATSTORE_ADD_DIRECT_MESSAGE = 'chat/addDirectMessage';
-export const CHATSTORE_SET_CONNECTED = 'chat/setConnected';
+export const ROOTSTORE_SET_CSRF = 'setCsrf';

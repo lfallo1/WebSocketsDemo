@@ -15,17 +15,13 @@
 
 <script>
 
-    import {eventBus} from '../main.js';
+    import {mapState} from 'vuex';
 
     export default {
-        data() {
-            return {
-                messages: []
-            }
-        },
-        created() {
-            eventBus.$on('addMessage', (data) => this.messages.push(data.value));
-            eventBus.$on('scroll', () => this.$scrollTo(this.$refs.scrollTarget, 500))
+        computed:{
+            ...mapState({
+                messages: state => state.chat.messages
+            })
         }
     }
 

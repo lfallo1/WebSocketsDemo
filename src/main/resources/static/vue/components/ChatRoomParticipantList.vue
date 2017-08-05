@@ -44,11 +44,9 @@
         methods: {
             ...mapActions({
                 setChannelSubscriptions: 'chat/setChannelSubscriptions',
-                addChannelSubscription: 'chat/addChannelSubscription'
-            }),
-            directChatRequest(username) {
-                eventBus.$emit('tryStartDirectChat', {value: username});
-            }
+                addChannelSubscription: 'chat/addChannelSubscription',
+                directChatRequest: 'chat/directChatRequest'
+            })
         },
         computed: {
             ...mapGetters({
