@@ -161,6 +161,14 @@ export default {
             for (let i = 0; i < state.directChatSessions.length; i++) {
                 if (state.directChatSessions[i].directChatUsernames.indexOf(user) > -1) {
                     state.directChatSessions.splice(i, 1);
+
+                    //yah, ui logic dont belong in mutations.
+                    //but i want a msg displayed whenever a chat session disconnects due to a user
+                    //disconnecting. therefore a search needs to be performed on existing chat sessions.
+                    //the search could be done in an action to find if a session exists, but then a search would still
+                    //need to be done in the mutation to find the matching session.
+                    //dont wanna do multiple identical searches, and therefore just invoking toast here
+                    //when/if a toaster found
                     Vue.toasted.error(user + ' is disconnected. Chat session closed.', {
                         position: 'bottom-right',
                         icon: 'block'
