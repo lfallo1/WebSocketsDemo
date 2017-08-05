@@ -16,7 +16,8 @@ import {
     CHATSTORE_SET_USERS_CONNECTED,
     CHATSTORE_UPDATE_CURRENT_MESSAGE,
     CHATSTORE_CLOSE_DIRECT_CHAT_SESSION,
-    CHATSTORE_SET_CURRENT_LINE
+    CHATSTORE_SET_CURRENT_LINE,
+    CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT
 } from './mutation-types.js';
 import axios from 'axios';
 import config from '../../config.js';
@@ -160,10 +161,24 @@ export default {
             state.currentMessage = currentMessage;
         },
         [CHATSTORE_CLOSE_DIRECT_CHAT_SESSION](state, session){
-            session.isHidden = true;
+            for(let i = 0; i < state.directChatSessions.length; i++){
+                if(state.directChatSessions[i] == payload.session){
+                    state.directChatSessions[i].isHidden = true;
+                    break;
+                }
+            }
+            // session.isHidden = true;
         },
         [CHATSTORE_SET_CURRENT_LINE](state, currentLine){
             state.currentLine = currentLine;
+        },
+        [CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT](state, payload){
+            for(let i = 0; i < state.directChatSessions.length; i++){
+                if(state.directChatSessions[i] == payload.session){
+                    state.directChatSessions[i].directChatInputText = payload.text;
+                    break;
+                }
+            }
         }
     },
     actions: {
@@ -194,13 +209,17 @@ export default {
 
             });
         },
-        sendDirectTextMessage({state, rootState}, payload) {
-            state.stompClient.send("/app/direct/message/" + payload.directChatChannel, {},
+        sendDirectTextMessage({state, rootState, dispatch}, session) {
+            state.stompClient.send("/app/direct/message/" + session.directChatChannel, {},
                 JSON.stringify({
                     'from': rootState.auth.name,
-                    'text': payload.directChatInputText,
-                    'channel': {name: payload.directChatChannel}
+                    'text': session.directChatInputText,
+                    'channel': {name: session.directChatChannel}
                 }));
+            dispatch('updateDirectChatSessionInputText',{session: session, text:""});
+        },
+        updateDirectChatSessionInputText({commit}, payload){
+            commit(CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT, payload);
         },
         toggleSubscription({commit, dispatch, state}, channel) {
             if (state.stompClient.subscribe) {
@@ -345,9 +364,11 @@ export default {
         setDirectChatSessions({commit}, sessions){
             commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, sessions);
         },
-        disconnectUser({commit}, user){
+        disconnectUser({commit}, payload){
+            const user = payload.body;
             commit(CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER, user);
             commit(CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER, user);
+            //TODO show toaster
         },
         handleDirectMessage({commit}, data){
             let author = JSON.parse(data.body).from;
