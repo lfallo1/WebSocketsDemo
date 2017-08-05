@@ -161,7 +161,10 @@ export default {
             for (let i = 0; i < state.directChatSessions.length; i++) {
                 if (state.directChatSessions[i].directChatUsernames.indexOf(user) > -1) {
                     state.directChatSessions.splice(i, 1);
-                    Vue.toast(user + ' has left the room', {className: 'et-alert', verticalPosition: 'bottom', horizontalPosition: 'right' });
+                    Vue.toasted.error(user + ' is disconnected. Chat session closed.', {
+                        position: 'bottom-right',
+                        icon: 'block'
+                    }).goAway(3500);
                     break;
                 }
             }
@@ -197,7 +200,11 @@ export default {
 
             state.stompClient.connect({'X-CSRF-TOKEN': rootState.csrf}, (frame) => {
 
-                Vue.toast('You are connected!', {className: 'et-info', verticalPosition: 'bottom', horizontalPosition: 'right' });
+                Vue.toasted.success('<span class="glyphicon glyphicon-success"></span>&nbsp; You are connected!', {
+                    position: 'bottom-right',
+                    'full-width': true,
+                    icon : 'rss_feed'
+                }).goAway(3500);
 
                 commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, []);
 
@@ -224,6 +231,10 @@ export default {
         disconnect({dispatch, commit, state}) {
             if (state.stompClient != null) {
                 state.stompClient.disconnect();
+                Vue.toasted.error('Disconnected from server', {
+                    position: 'bottom-right',
+                    icon: 'do_not_disturb'
+                }).goAway(3500);
             }
             commit(CHATSTORE_SET_CONNECTED, false);
             dispatch('setChannelSubscriptions',[]);
@@ -281,7 +292,7 @@ export default {
 
         },
         addMessage({state, commit}, payload){
-            commit(CHATSTORE_ADD_MESSAGE, payload);
+            const res = commit(CHATSTORE_ADD_MESSAGE, payload);
             setTimeout(()=>{
                 eventBus.$emit('transcribeScroll');
             },100)
@@ -385,6 +396,11 @@ export default {
                 isHidden: false
             }
             commit(CHATSTORE_ADD_DIRECT_CHAT_SESSION, session);
+
+            Vue.toasted.info('New chat session with ' + payload.username, {
+                position: 'bottom-left',
+                icon: 'chat'
+            }).goAway(3500);
 
             setTimeout(()=>{
                 eventBus.$emit('scroll', payload.channel);

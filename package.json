@@ -12,13 +12,15 @@
   "dependencies": {
     "axios": "^0.16.2",
     "bootstrap": "^3.3.7",
+    "material-design-icons": "^3.0.1",
     "modal-vue": "0.0.3",
     "net": "^1.0.2",
     "stompjs": "^2.3.3",
     "velocity-animate": "^1.5.0",
     "vue": "^2.3.3",
-    "vue-easy-toast": "^1.0.2",
-    "vue-scrollto": "^2.7.2"
+    "vue-material": "^0.7.4",
+    "vue-scrollto": "^2.7.2",
+    "vue-toasted": "^1.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

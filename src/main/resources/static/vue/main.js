@@ -1,5 +1,7 @@
 import Vue from "vue";
-import Toast from 'vue-easy-toast'
+import VueMaterial from 'vue-material'
+import 'vue-material/dist/vue-material.css'
+import Toasted from 'vue-toasted';
 import VueScrollTo from 'vue-scrollto';
 import store from './store/store.js';
 
@@ -10,8 +12,9 @@ import Footer from "./components/shared/Footer.vue";
 import Modal from 'modal-vue';
 import config from './config.js';
 
+Vue.use(VueMaterial);
 Vue.use(VueScrollTo);
-Vue.use(Toast);
+Vue.use(Toasted);
 
 //add components
 Vue.component('app-textmessages', TextMessages);
