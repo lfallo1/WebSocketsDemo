@@ -4,10 +4,10 @@
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
                 <div class="navbar-header">
-                    <button id="toggle-nav" class="navbar-toggle" :class="{'collapsed' : navCollapsed}"
+                    <button id="toggle-nav" class="navbar-toggle" :class="{'collapsed' : !ariaExpanded}"
                             data-toggle="collapse"
-                            data-target="#bs-example-navbar-collapse-1" :aria-expanded="!navCollapsed"
-                            @click="toggleNavCollapsed">
+                            data-target="#bs-example-navbar-collapse-1" :aria-expanded="ariaExpanded"
+                            @click="ariaExpanded=!ariaExpanded">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -33,13 +33,13 @@
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <div :class="{'collapse' : !ariaExpanded}" class="navbar-collapse" id="bs-example-navbar-collapse-1" @click="ariaExpanded=!ariaExpanded">
                     <ul class="nav navbar-nav navbar-right">
                         <li><a href="">{{auth.name ? 'Signed in as ' + auth.name : 'Not signed in'}}</a></li>
                         <li class="dropdown" :class="{'open' : navbarDropdownIsOpen}">
                             <a @click.prevent.stop="navbarDropdownIsOpen = !navbarDropdownIsOpen" href=""
                                class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                               aria-expanded="false">Account <span class="caret"></span></a>
+                               :aria-expanded="ariaExpanded">Account <span class="caret"></span></a>
                             <ul class="dropdown-menu" v-if="!auth.name">
                                 <li><a href="/login">Signin</a></li>
                             </ul>
@@ -63,7 +63,7 @@
         data() {
             return {
                 navbarDropdownIsOpen: false,
-                navCollapsed: true
+                ariaExpanded: false
             }
         },
         computed: {
