@@ -7,6 +7,7 @@
             <span class="connected-user" v-for="(username, idx) in usersConnected">
                 <span :class="{'clickable text-primary' : auth.name && auth.name != username}" @click="directChatRequest(username)">{{username}}{{idx < usersConnected.length-1 ? ', ' : ''}}</span>
             </span>
+            <span class="no-connected-users-text" v-if="usersConnected.length == 0">There are currently no logged in users</span>
         </div>
     </div>
 </template>
@@ -40,6 +41,7 @@
         padding: 4px;
         text-align: left;
         border: 1px solid black;
+        min-height: 30px;
     }
 
     #connected-users-container .connected-user{
@@ -53,5 +55,9 @@
         margin-left: 10px;
         margin-right: 12px;
         font-size: 10px;
+    }
+
+    .no-connected-users-text{
+        color: #d9534f;
     }
 </style>
