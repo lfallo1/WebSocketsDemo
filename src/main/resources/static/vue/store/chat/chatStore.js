@@ -336,7 +336,7 @@ export default {
 
                 Vue.toasted.success('subscribed to ' + channel.name, {
                     position: 'bottom-right',
-                    icon: 'block'
+                    icon: 'check_circle'
                 }).goAway(3500);
             }
         },

@@ -129,6 +129,7 @@
         padding: 8px;
         background: #555;
         color: white;
+        margin-bottom: 8px;
         /*max-height: 200px;*/
         /*overflow-y: scroll;*/
     }
@@ -164,8 +165,9 @@
     .direct-chat-session-container-collapsed {
         background: rgb(51, 122, 183);
         color: white;
-        float: right;
         padding: 5px;
+        margin-top: 3px;
+        margin-bottom: 3px;
     }
 
     .direct-chat-session-container-collapsed:hover, .direct-chat-session-usernames:hover {
