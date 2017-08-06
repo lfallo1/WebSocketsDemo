@@ -13,4 +13,4 @@
 #### csrf configuration from spring -> thymeleaf -> vuejs 
 
 #### To generate git properties file use mvn clean package -DskipTests=true
-#### To build, create/push docker image: mvn clean install docker:build docker:push -Ddocker.host=unix:///var/run/docker.sock
+#### To build, create/push docker image: mvn clean install docker:build docker:push -Ddocker.host=unix:///var/run/docker.sock (-DskipTests=true to also skip tests)

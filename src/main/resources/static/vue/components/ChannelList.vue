@@ -2,7 +2,7 @@
     <div>
         <div v-if="channelSubscriptions.length == 0">
             <div id="subscription-list" v-if="connected">
-                <h3>Listen to feed</h3>
+                <h3><i class="material-icons">rss_feed</i>&nbsp;Listen to feed</h3>
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : channelSubscriptions.filter(s=>s.channel == channel).length > 0}"
                             class="btn btn-default"
@@ -12,7 +12,7 @@
             </div>
 
             <div id="transcribe-list" v-if="auth.name && connected">
-                <h3>Transcribe to feed</h3>
+                <h3><i class="material-icons">mode_edit</i>&nbsp;Transcribe to feed</h3>
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : channelSubscriptions.filter(s=>s.channel == channel).length > 0}"
                             class="btn btn-default"
@@ -25,6 +25,10 @@
 
         <div v-else>
             <button class="btn btn-danger" @click="unsubscribeFromChannel">Stop listening / transcribing</button>
+            <div class="subscribed-text text-primary">
+                <i class="material-icons with-text md-18">rss_feed</i>
+                {{subscribedText}}
+            </div>
         </div>
     </div>
 </template>
@@ -37,7 +41,8 @@
         computed: {
             ...mapGetters({
                 channelsListen: 'chat/channelsListen',
-                channelsTranscribe: 'chat/channelsTranscribe'
+                channelsTranscribe: 'chat/channelsTranscribe',
+                subscribedText: 'chat/subscribedText'
             }),
             ...mapState({
                 auth: state => state.auth,

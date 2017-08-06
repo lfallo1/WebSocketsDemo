@@ -18,12 +18,11 @@
                         <li class="connected-navbar-message"
                             :class="{'connected':connected, 'disconnected':!connected}">
                             <a @click.prevent.stop href="">
-                                {{connected ? 'CONNECTED (' + usersConnected.length + ' users logged in)' : 'DISCONNECTED'}}
-                                <br>
-                                <span class="text-primary">{{subscribedText}}</span>
+                                {{connected ? 'CONNECTED' : 'DISCONNECTED'}}
                             </a>
-                            <button class="btn btn-danger" v-if="connected" @click="disconnect"><span
-                                    class="glyphicon glyphicon-remove"></span>Disconnect
+                            <button class="btn btn-danger" v-if="connected" @click="disconnect">
+                                <i class="material-icons with-text">block</i>&nbsp;
+                                Disconnect
                             </button>
                             <button v-else class="btn btn-success" @click="connect"><span
                                     class="glyphicon glyphicon-signal"></span>&nbsp;Connect to server
@@ -35,7 +34,10 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div :class="{'collapse' : !navExpanded}" class="navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="">{{auth.name ? 'Signed in as ' + auth.name : 'Not signed in'}}</a></li>
+                        <li>
+                            <a href="" v-if="auth.name"><i class="material-icons with-text">account_circle</i>&nbsp;{{'Signed in as ' + auth.name}}</a>
+                            <a href="" v-else>Not signed in</a>
+                        </li>
                         <li class="dropdown" :class="{'open' : navbarDropdownIsOpen}">
                             <a @click.prevent.stop="navbarDropdownIsOpen = !navbarDropdownIsOpen" href=""
                                class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"

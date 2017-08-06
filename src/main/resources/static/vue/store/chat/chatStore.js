@@ -96,7 +96,8 @@ export default {
         subscribedText(state){
             //they will have multiple subscriptions on same channel. so get unique list for display purposes
             const arr = config.unique(state.channelSubscriptions);
-            return state.channelSubscriptions.length > 0 ? '(Listening on ' + arr.map(s => s.channel.name).toString() + ' - ' + state.channelParticipants.length + ' total) ' : '';
+            const participants = state.channelParticipants.length > 1 ? 'participants' : 'participant';
+            return state.channelSubscriptions.length > 0 ? 'Subscribed to ' + arr.map(s => s.channel.name).toString() + ' - ' + state.channelParticipants.length + ' ' + participants : '';
         },
         textColor(state) {
             return state.color ? 'info' : 'warning'
@@ -171,7 +172,7 @@ export default {
                     //when/if a toaster found
                     Vue.toasted.error(user + ' is disconnected. Chat session closed.', {
                         position: 'bottom-right',
-                        icon: 'block'
+                        icon: 'warning'
                     }).goAway(3500);
                     break;
                 }

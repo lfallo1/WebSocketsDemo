@@ -4,7 +4,6 @@
         <div class="direct-chat-sessions" v-show="directChatSessions.length > 0"
              v-for="session in directChatSessions">
             <div v-show="!session.isHidden">
-                <div :ref="'container' + session.directChatChannel"></div>
                 <div class="direct-chat-session-container" v-show="session.visible">
                     <div>
                         <div class="direct-chat-session-usernames">
@@ -28,6 +27,7 @@
                             </button>
                         </div>
                     </div>
+                    <div :ref="'container' + session.directChatChannel"></div>
                 </div>
                 <div class="direct-chat-session-container-collapsed" @click="session.visible=true"
                      v-show="!session.visible">

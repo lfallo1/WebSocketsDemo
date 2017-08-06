@@ -51,7 +51,7 @@
             'app-textmessage-list': TextMessageList,
             'app-channellist': ChannelList,
             'app-textmessage-input': TextMessageInput,
-            'app-directchatsessions': DirectChatSessions
+            'app-directchatsessions': DirectChatSessions,
         },
         methods: {
             ...mapActions({
