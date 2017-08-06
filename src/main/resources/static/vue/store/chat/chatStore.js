@@ -283,7 +283,7 @@ export default {
 
             if (value.toLowerCase() == 'enter') {
                 if (state.currentLine.value) {
-                    dispatch('setCurrentLine', {value: state.currentLine.value, author: channel.name, time: time, author: author});
+                    dispatch('setCurrentLine', {value: state.currentLine.value, channel: channel.name, time: time, author: author});
                     dispatch('addMessage',{data: state.currentLine, textClass: color});
                     dispatch('setCurrentLine', {value: "", channel: "", author: "", time: undefined});
                     dispatch('updateCurrentMessage', "");
@@ -307,7 +307,7 @@ export default {
             },100)
         },
         setCurrentLine({commit}, payload){
-            commit('chat/setCurrentLine', {value: payload.value, color: payload.color, time: payload.time, author: payload.author});
+            commit('chat/setCurrentLine', {value: payload.value, color: payload.color, time: payload.time, author: payload.author, channel: payload.channel});
         },
 
         subscribeToChannel({dispatch, state}, channel) {
