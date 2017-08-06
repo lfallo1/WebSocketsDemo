@@ -76,4 +76,10 @@
         font-size: 20px;
         font-weight: bold;
     }
+
+    .subscribed-text{
+        margin-top: 7px;
+        font-size: 13px;
+        font-weight: bold;
+    }
 </style>

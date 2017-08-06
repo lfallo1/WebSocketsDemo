@@ -35,7 +35,7 @@
                 <div :class="{'collapse' : !navExpanded}" class="navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <a href="" v-if="auth.name"><i class="material-icons with-text">account_circle</i>&nbsp;{{'Signed in as ' + auth.name}}</a>
+                            <a href="" @click.prevent.stop="" v-if="auth.name"><i class="material-icons with-text">account_circle</i>&nbsp;{{'Signed in as ' + auth.name}}</a>
                             <a href="" v-else>Not signed in</a>
                         </li>
                         <li class="dropdown" :class="{'open' : navbarDropdownIsOpen}">
@@ -43,10 +43,10 @@
                                class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                                :aria-expanded="navExpanded">Account <span class="caret"></span></a>
                             <ul class="dropdown-menu" v-if="!auth.name">
-                                <li><a href="/login">Signin</a></li>
+                                <li><a href="/login"><i class="material-icons with-text md-18">perm_identity</i>Signin</a></li>
                             </ul>
                             <ul class="dropdown-menu" v-else>
-                                <li><a href="/logout">Logout</a></li>
+                                <li><a href="/logout"><i class="material-icons with-text md-18">exit_to_app</i>Logout</a></li>
                             </ul>
                         </li>
                     </ul>
