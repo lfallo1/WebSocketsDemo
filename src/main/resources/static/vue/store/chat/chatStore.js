@@ -378,7 +378,7 @@ export default {
             if (session) {
                 session.isHidden = false;
             }
-            else if (rootState.auth.name && username != rootState.auth.name) {
+            else if (state.connected && rootState.auth.name && username != rootState.auth.name) {
                 dispatch('directChatStart', username);
             }
         },
