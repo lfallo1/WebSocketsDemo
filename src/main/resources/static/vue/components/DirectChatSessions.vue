@@ -11,7 +11,7 @@
                             <span class="glyphicon glyphicon-remove text-danger"
                                   @click="closeDirectChatSession(session)"></span>
                         </div>
-                        <div class="direct-messages-wrapper">
+                        <div :class="'add-on-' + session.directChatChannel" class="direct-messages-wrapper">
                             <div :ref="session.directChatChannel"></div>
                             <div v-if="session.visible" class="direct-chat-session-message" :class="{'message-self':message.author == auth.name, 'message-other':message.author != auth.name}"
                                  v-for="message in session.directChatMessages">
@@ -47,15 +47,17 @@
     export default {
         methods: {
             send(session){
-                this.sendDirectTextMessage(session);
+                if(session.directChatInputText){
+                    this.sendDirectTextMessage(session);
+                }
             },
             scroll(channel){
                 let vm = this;
-                vm.$scrollTo(this.$refs['container' + channel][0], 50, {
+                vm.$scrollTo(vm.$refs['container' + channel][0], 250, {
                     easing: 'ease-in',
                     onDone: ()=>{
-                        vm.$scrollTo(this.$refs[channel][0], 50, {
-                            container: '.direct-messages-wrapper',
+                        vm.$scrollTo(vm.$refs[channel][0], 250, {
+                            container: '.add-on-' + channel,
                             easing: 'ease-in'
                         });
                     }

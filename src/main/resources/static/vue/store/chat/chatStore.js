@@ -457,7 +457,7 @@ export default {
             //this is the cleanest way I've found to notify all listener components
             setTimeout(()=>{
                 eventBus.$emit('scroll', channel.name);
-            },0);
+            },100);
         },
         closeDirectChatSession({commit}, session){
             commit(CHATSTORE_CLOSE_DIRECT_CHAT_SESSION, session);
