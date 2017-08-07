@@ -36,7 +36,7 @@
                     <ul class="nav navbar-nav navbar-right">
                         <li>
                             <a href="" @click.prevent.stop="" v-if="auth.name"><i class="material-icons with-text">account_circle</i>&nbsp;{{'Signed in as ' + auth.name}}</a>
-                            <a href="" v-else>Not signed in</a>
+                            <a href="" @click.prevent.stop="" v-else>Not signed in</a>
                         </li>
                         <li class="dropdown" :class="{'open' : navbarDropdownIsOpen}">
                             <a @click.prevent.stop="navbarDropdownIsOpen = !navbarDropdownIsOpen" href=""
