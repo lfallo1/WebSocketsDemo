@@ -37,7 +37,8 @@ public class WebSocketAuthService {
                         .collect(Collectors.toList()).size() > 0 && String.valueOf(c.getChannelId()).equals(channel))
                 .findFirst();
 
-        return ((CustomUserDetails) ((CustomUsernamePasswordAuthenticationToken) auth).getPrincipal()).isTranscribing() && channelTranscriber.isPresent();
+        CustomUserDetails user = ((CustomUserDetails) ((CustomUsernamePasswordAuthenticationToken) auth).getPrincipal());
+        return user.isTranscribing() && channelTranscriber.isPresent();
     }
 
     public IsTranscriberDto authenticateSubscriber(String channel, Map<String, Set<ChannelSubscription>> channelSubscribers, Principal auth) throws UnauthorizedException {

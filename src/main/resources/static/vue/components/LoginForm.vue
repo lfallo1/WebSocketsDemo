@@ -22,7 +22,7 @@
                     <button id="login-button" type="submit" class="btn btn-primary">Submit</button>
 
                     <div id="login-error" v-if="error" class="alert alert-danger text-center">
-                        <span class="glyphicon glyphicon-remove-circle"></span>&nbsp;<span>Invalid username / password</span>
+                        <span class="glyphicon glyphicon-remove-circle"></span>&nbsp;<span>{{error}}</span>
                     </div>
                 </form>
             </div>
@@ -54,8 +54,12 @@
                 }).then(res => {
                     window.location.href = "/";
                 }).catch(err => {
-                    this.error = true;
                     console.log(err);
+                    if(err && err.response && err.response.data && err.response.data.message && err.response.data.message.toLowerCase().indexOf('maximum sessions') > -1){
+                        this.error = "Maximum sessions for this login exceeded";
+                        return;
+                    }
+                    this.error = "Invalid username / password";
                 })
             }
         },

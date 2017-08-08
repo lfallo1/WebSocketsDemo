@@ -26,7 +26,7 @@ public class MessageHandlingController {
 
     @MessageMapping("/shared/{channel}")
     @SendTo("/topic/transcription/{channel}")
-    @PreAuthorize("@webSocketAuthService.validateCanSend(#auth, #channel)")
+    @PreAuthorize("isAuthenticated() && @webSocketAuthService.validateCanSend(#auth, #channel)")
     public OutputMessage send(Principal auth, MessageHeaderAccessor header, @DestinationVariable String channel, WebsocketMessage websocketMessage) throws AccessDeniedException {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
         return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());

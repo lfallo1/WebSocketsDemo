@@ -9,8 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -38,10 +37,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public ConcurrentSessionControlAuthenticationStrategy concurrentSessionStrategy() {
-        ConcurrentSessionControlAuthenticationStrategy concurrentSessionStrategy = new ConcurrentSessionControlAuthenticationStrategy(new SessionRegistryImpl());
-        concurrentSessionStrategy.setExceptionIfMaximumExceeded(true);
-        return concurrentSessionStrategy;
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     /**
@@ -52,11 +49,17 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        ConcurrentSessionControlAuthenticationStrategy sessionStrategy = concurrentSessionStrategy();
+//        ConcurrentSessionControlAuthenticationStrategy sessionStrategy = concurrentSessionStrategy();
+
+        //set max of one session
+        http.sessionManagement()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(true);
+
 //		// @formatter:off
         http
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
-                .and().authorizeRequests().antMatchers("/", "/api/config/**", "/api/channel/**", "/shared/**", "/topic/**").permitAll() //routes
+                .and().authorizeRequests().antMatchers("/", "/invalidSession", "/api/config/**", "/api/channel/**", "/shared/**", "/topic/**").permitAll() //routes
                 .and().formLogin()
                 .loginPage("/login").defaultSuccessUrl("/").permitAll() //login
                 .and().authorizeRequests().anyRequest().authenticated() //require auth for other requests
@@ -67,6 +70,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessUrl("/")
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"));
 
+        //auth failure handlling
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
         http.formLogin().successHandler(authenticationSuccessHandler);
         http.formLogin().failureHandler(authenticationFailureHandler);
