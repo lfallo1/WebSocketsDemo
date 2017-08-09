@@ -12,11 +12,13 @@ public class SessionExpirationListener implements ApplicationListener<SessionDes
 
     /**
      * handle session destroyed event
+     *
      * @param event
      */
     @Override
     public void onApplicationEvent(SessionDestroyedEvent event) {
         //TODO perhaps send message to front (wont be difficult to handle on front, but still might be overkill, so leaving out for now)
+        System.out.println("session expired");
     }
 
 }
