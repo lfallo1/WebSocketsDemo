@@ -34,8 +34,12 @@ export default new Vuex.Store({
             const csrf = config.getCsrfHeader();
             commit(ROOTSTORE_SET_CSRF, csrf);
         },
-        scroll({commit}){
-            //TODO
+        keepAlive({state}){
+            if(state.auth.name){
+                axios.get('api/user/keepalive')
+                    .then(()=>console.log('keep session alive'))
+                    .catch((err)=> console.log('##ERROR keeping session alive## -> ', err));
+            }
         }
     }
 });

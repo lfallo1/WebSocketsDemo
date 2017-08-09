@@ -300,11 +300,12 @@ export default {
             }
 
         },
-        addMessage({state, commit}, payload){
+        addMessage({commit, dispatch}, payload){
             const res = commit(CHATSTORE_ADD_MESSAGE, payload);
             setTimeout(()=>{
                 eventBus.$emit('transcribeScroll');
-            },100)
+            },100);
+            dispatch('keepAlive', null, {root: true});
         },
         setCurrentLine({commit}, payload){
             commit('chat/setCurrentLine', {value: payload.value, color: payload.color, time: payload.time, author: payload.author, channel: payload.channel});
@@ -439,7 +440,7 @@ export default {
         updateDirectChatSessionInputText({commit}, payload){
             commit(CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT, payload);
         },
-        handleDirectMessage({commit}, data){
+        handleDirectMessage({commit, dispatch}, data){
             let author = JSON.parse(data.body).from;
             let text = JSON.parse(data.body).text;
             let channel = JSON.parse(data.body).channel;
@@ -458,6 +459,7 @@ export default {
             setTimeout(()=>{
                 eventBus.$emit('scroll', channel.name);
             },100);
+            dispatch('keepAlive', null, {root: true});
         },
         closeDirectChatSession({commit}, session){
             commit(CHATSTORE_CLOSE_DIRECT_CHAT_SESSION, session);
