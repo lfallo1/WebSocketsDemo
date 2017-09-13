@@ -1,10 +1,10 @@
 version: "3.1"
 services:
   spring-boot-docker:
-    image: lfallo1/websocket-demo:4c2fcb7
+    image: lfallo1/websocket-demo:a65398a
     restart: always
     ports:
-      - "8082:8080"
+      - "80:8080"
     links:
       - postgres:postgres
     depends_on:
