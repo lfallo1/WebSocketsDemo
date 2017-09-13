@@ -14,11 +14,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class LoginController {
 
     @RequestMapping("/login")
-    public String showLoginForm(Model model) {
-
-        model.addAttribute("loginCommand", new LoginCommand());
-
-        return "loginform";
+    public String showLoginForm(Authentication auth, Model model) {
+        if (auth == null) {
+            model.addAttribute("loginCommand", new LoginCommand());
+            return "loginform";
+        }
+        return "redirect:/";
     }
 
     @RequestMapping("/logout-success")

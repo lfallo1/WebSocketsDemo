@@ -51,7 +51,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 //        ConcurrentSessionControlAuthenticationStrategy sessionStrategy = concurrentSessionStrategy();
 
-        //set max of one session
+        //set max of one session - otherwise, need to update how managing of logged in users works
         http.sessionManagement()
                 .maximumSessions(1)
                 .maxSessionsPreventsLogin(true);
