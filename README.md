@@ -1,4 +1,4 @@
-##Transcription demo application using Spring Boot / Thymeleaf with Vuejs
+## Transcription demo application using Spring Boot / Thymeleaf with Vuejs
 
 #### Download front-end dependencies
 npm install && bower install
