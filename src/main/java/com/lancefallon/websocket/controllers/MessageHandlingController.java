@@ -28,6 +28,7 @@ public class MessageHandlingController {
     @SendTo("/topic/transcription/{channel}")
     @PreAuthorize("isAuthenticated() && @webSocketAuthService.validateCanSend(#auth, #channel)")
     public OutputMessage send(Principal auth, MessageHeaderAccessor header, @DestinationVariable String channel, WebsocketMessage websocketMessage) throws AccessDeniedException {
+
         String time = new SimpleDateFormat("HH:mm").format(new Date());
         return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
     }
@@ -44,6 +45,19 @@ public class MessageHandlingController {
     public OutputMessage sendDirect(@DestinationVariable String unique, WebsocketMessage websocketMessage) throws AccessDeniedException {
         String time = new SimpleDateFormat("HH:mm").format(new Date());
         return new OutputMessage(websocketMessage.getFrom(), websocketMessage.getText(), time, websocketMessage.getChannel(), websocketMessage.getColor());
+    }
+
+    @MessageMapping("/test/{type}")
+    @SendTo("/topic/test/{type}")
+    public String sendTest(@DestinationVariable String type) throws AccessDeniedException {
+        switch (type.toLowerCase()) {
+            case "date":
+                return "The current time is: " + new Date().toString();
+            case "about":
+                return "Lance Fallon / Jim Cosby Transcription Demo 2018";
+            default:
+                return "Invalid type specified";
+        }
     }
 
     @MessageExceptionHandler

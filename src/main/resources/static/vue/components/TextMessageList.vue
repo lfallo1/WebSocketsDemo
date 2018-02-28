@@ -19,10 +19,10 @@
     import {eventBus} from '../main.js';
 
     export default {
-        created(){
+        created() {
             eventBus.$on('transcribeScroll', () => this.$scrollTo(this.$refs.scrollTarget, 200));
         },
-        computed:{
+        computed: {
             ...mapState({
                 messages: state => state.chat.messages
             })

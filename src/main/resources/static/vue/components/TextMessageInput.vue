@@ -3,7 +3,8 @@
         <div id="input-container" class="input-group" v-if="auth.name && isTranscriber">
                 <span id="toggle-color-button" class="input-group-addon" @click="toggleColor"><span
                         class="glyphicon glyphicon-retweet"></span>&nbsp;Change sender</span>
-            <input class="form-control" :disabled="channelSubscriptions.length == 0" type="text" @keydown="nextCharacter"
+            <input class="form-control" :disabled="channelSubscriptions.length == 0" type="text"
+                   @keydown="nextCharacter"
                    v-model="currentMessage"></input>
             <span id="send-button" :class="'input-group-addon btn bg-' + textColor"
                   :disabled="channelSubscriptions.length == 0" @click="carriageReturn">Send</span>
@@ -17,6 +18,11 @@
     import {mapState, mapGetters, mapActions} from 'vuex';
 
     export default {
+        data() {
+            return {
+                testMessage: ''
+            }
+        },
         methods: {
             ...mapActions({
                 sendMessage: 'chat/sendMessage',
@@ -58,10 +64,10 @@
         },
         computed: {
             currentMessage: {
-                get () {
+                get() {
                     return this.$store.state.chat.currentMessage
                 },
-                set (value) {
+                set(value) {
                     this.updateCurrentMessage(value);
                 }
             },

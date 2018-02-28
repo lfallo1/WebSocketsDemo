@@ -28,6 +28,8 @@
         <docker.host>http://127.0.0.1:2375</docker.host>
         <docker.image.tag>${git.commit.id.abbrev}</docker.image.tag>
         <git.generate.properties>true</git.generate.properties>
+        <docker.username>dummy</docker.username>
+        <docker.password>dummy</docker.password>
     </properties>
 
     <dependencies>
@@ -112,8 +114,8 @@
                     <dockerHost>${docker.host}</dockerHost>
 
                     <authConfig>
-                        <username>lfallo1</username>
-                        <password>Snoopy08</password>
+                        <username>${docker.username}</username>
+                        <password>${docker.password}</password>
                     </authConfig>
 
                     <verbose>true</verbose>

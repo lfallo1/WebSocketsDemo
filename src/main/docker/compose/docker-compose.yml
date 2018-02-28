@@ -1,15 +1,17 @@
 version: "3.1"
 services:
   spring-boot-docker:
-    image: lfallo1/websocket-demo:a65398a
+    image: lfallo1/websocket-demo:20a14a5
     restart: always
     ports:
-      - "80:8080"
+      - "8080:8080"
     links:
       - postgres:postgres
     depends_on:
       - postgres
     environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: production_secret
       SPRING_PROFILES_ACTIVE: prod
   postgres:
     image: postgres

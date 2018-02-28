@@ -1,24 +1,24 @@
 import Vue from "vue";
 import {
-    CHATSTORE_STOMP_CLIENT_CONNECT,
     CHATSTORE_ADD_CHANNEL_SUBSCRIPTION,
+    CHATSTORE_ADD_DIRECT_CHAT_SESSION,
+    CHATSTORE_ADD_DIRECT_MESSAGE,
+    CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION,
+    CHATSTORE_ADD_MESSAGE,
     CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS,
+    CHATSTORE_CLOSE_DIRECT_CHAT_SESSION,
+    CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER,
     CHATSTORE_SET_CHANNEL_PARTICIPANTS,
     CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS,
     CHATSTORE_SET_CHANNELS,
-    CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION,
-    CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER,
-    CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER,
-    CHATSTORE_ADD_DIRECT_MESSAGE,
-    CHATSTORE_ADD_DIRECT_CHAT_SESSION,
-    CHATSTORE_SET_DIRECT_CHAT_SESSIONS,
     CHATSTORE_SET_CONNECTED,
-    CHATSTORE_TOGGLE_COLOR,
-    CHATSTORE_ADD_MESSAGE,
-    CHATSTORE_SET_USERS_CONNECTED,
-    CHATSTORE_UPDATE_CURRENT_MESSAGE,
-    CHATSTORE_CLOSE_DIRECT_CHAT_SESSION,
     CHATSTORE_SET_CURRENT_LINE,
+    CHATSTORE_SET_DIRECT_CHAT_SESSIONS,
+    CHATSTORE_SET_USERS_CONNECTED,
+    CHATSTORE_STOMP_CLIENT_CONNECT,
+    CHATSTORE_TOGGLE_COLOR,
+    CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER,
+    CHATSTORE_UPDATE_CURRENT_MESSAGE,
     CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT
 } from './mutation-types.js';
 import axios from 'axios';
@@ -93,7 +93,7 @@ export default {
             }
             return undefined;
         },
-        subscribedText(state){
+        subscribedText(state) {
             //they will have multiple subscriptions on same channel. so get unique list for display purposes
             const arr = config.unique(state.channelSubscriptions);
             const participants = state.channelParticipants.length > 1 ? 'participants' : 'participant';
@@ -104,7 +104,7 @@ export default {
         }
     },
     mutations: {
-        [CHATSTORE_STOMP_CLIENT_CONNECT](state, socket){
+        [CHATSTORE_STOMP_CLIENT_CONNECT](state, socket) {
             state.stompClient = Stomp.over(socket);
         },
         [CHATSTORE_SET_CONNECTED](state, value) {
@@ -125,40 +125,40 @@ export default {
         [CHATSTORE_SET_CHANNEL_PARTICIPANTS](state, channelParticipants) {
             state.channelParticipants = channelParticipants;
         },
-        [CHATSTORE_SET_USERS_CONNECTED](state, usersConnected){
+        [CHATSTORE_SET_USERS_CONNECTED](state, usersConnected) {
             state.usersConnected = usersConnected;
         },
 
-        [CHATSTORE_TOGGLE_COLOR](state){
+        [CHATSTORE_TOGGLE_COLOR](state) {
             state.color = !state.color;
         },
-        [CHATSTORE_ADD_MESSAGE](state, payload){
+        [CHATSTORE_ADD_MESSAGE](state, payload) {
             state.messages.push({data: payload.data, textClass: payload.textClass});
         },
-        [CHATSTORE_UPDATE_CURRENT_MESSAGE](state, currentMessage){
+        [CHATSTORE_UPDATE_CURRENT_MESSAGE](state, currentMessage) {
             state.currentMessage = currentMessage;
         },
-        [CHATSTORE_SET_CURRENT_LINE](state, currentLine){
+        [CHATSTORE_SET_CURRENT_LINE](state, currentLine) {
             state.currentLine = currentLine;
         },
 
-        [CHATSTORE_CLOSE_DIRECT_CHAT_SESSION](state, session){
-            for(let i = 0; i < state.directChatSessions.length; i++){
-                if(state.directChatSessions[i] == session){
+        [CHATSTORE_CLOSE_DIRECT_CHAT_SESSION](state, session) {
+            for (let i = 0; i < state.directChatSessions.length; i++) {
+                if (state.directChatSessions[i] == session) {
                     state.directChatSessions[i].isHidden = true;
                     break;
                 }
             }
             // session.isHidden = true;
         },
-        [CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER](state, user){
+        [CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER](state, user) {
             for (let i = 0; i < state.directMessageSubscriptions.length; i++) {
                 if (state.directMessageSubscriptions[i].users.indexOf(user) > -1) {
                     state.directMessageSubscriptions[i].unsubscribe();
                 }
             }
         },
-        [CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER](state, user){
+        [CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER](state, user) {
             for (let i = 0; i < state.directChatSessions.length; i++) {
                 if (state.directChatSessions[i].directChatUsernames.indexOf(user) > -1) {
                     state.directChatSessions.splice(i, 1);
@@ -178,23 +178,23 @@ export default {
                 }
             }
         },
-        [CHATSTORE_ADD_DIRECT_CHAT_SESSION](state, session){
+        [CHATSTORE_ADD_DIRECT_CHAT_SESSION](state, session) {
             state.directChatSessions.push(session);
         },
-        [CHATSTORE_SET_DIRECT_CHAT_SESSIONS](state, sessions){
+        [CHATSTORE_SET_DIRECT_CHAT_SESSIONS](state, sessions) {
             state.directChatSessions = sessions;
         },
-        [CHATSTORE_ADD_DIRECT_MESSAGE](state, message){
+        [CHATSTORE_ADD_DIRECT_MESSAGE](state, message) {
             let session = state.directChatSessions.filter(s => s.directChatChannel == message.channel.name)[0];
             session.directChatMessages.push(message);
             session.isHidden = false;
         },
-        [CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION](state, subscription){
+        [CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION](state, subscription) {
             state.directMessageSubscriptions.push(subscription);
         },
-        [CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT](state, payload){
-            for(let i = 0; i < state.directChatSessions.length; i++){
-                if(state.directChatSessions[i] == payload.session){
+        [CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT](state, payload) {
+            for (let i = 0; i < state.directChatSessions.length; i++) {
+                if (state.directChatSessions[i] == payload.session) {
                     state.directChatSessions[i].directChatInputText = payload.text;
                     break;
                 }
@@ -202,7 +202,7 @@ export default {
         }
     },
     actions: {
-        connect({commit, dispatch, state, rootState}){
+        connect({commit, dispatch, state, rootState}) {
 
             var socket = new SockJS('/shared');
             commit(CHATSTORE_STOMP_CLIENT_CONNECT, socket);
@@ -212,21 +212,43 @@ export default {
                 Vue.toasted.success('<span class="glyphicon glyphicon-success"></span>&nbsp; You are connected!', {
                     position: 'bottom-right',
                     'full-width': true,
-                    icon : 'rss_feed'
+                    icon: 'rss_feed'
                 }).goAway(3500);
 
                 commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, []);
 
                 //get notified whenever user connects or disconnects
-                state.stompClient.subscribe('/topic/users/connected', (data) => dispatch('setUsersConnected',data));
+                state.stompClient.subscribe('/topic/users/connected', (data) => dispatch('setUsersConnected', data));
                 state.stompClient.subscribe('/topic/users/disconnect', (data) => dispatch('disconnectUser', data));
+
+                //test subscriptions
+                /*                state.stompClient.subscribe('/topic/test/date', (data) => {
+                                    console.log('test subscription (date): ' + data)
+                                });
+                                state.stompClient.subscribe('/topic/test/about', (data) => {
+                                    console.log('test subscription (about): ' + data)
+                                });*/
+
 
                 commit(CHATSTORE_SET_CONNECTED, true);
 
                 if (rootState.auth.name) {
 
+                    //dummy messages to send 1x per minute (note here that the optional prefix 'app' is ignored)
+                    /*                    setInterval(() => {
+                                            const factor = new Date().getTime() % 2;
+                                            if (factor == 0) {
+                                                state.stompClient.send('/test/date');
+                                            } else if (factor == 1) {
+                                                state.stompClient.send('/test/about');
+                                            }
+                                        }, 60000);*/
+
                     state.stompClient.subscribe('/topic/direct/request/' + rootState.auth.name, (data) => {
-                        dispatch('addDirectChatSession',{username: JSON.parse(data.body).from, channel: JSON.parse(data.body).text});
+                        dispatch('addDirectChatSession', {
+                            username: JSON.parse(data.body).from,
+                            channel: JSON.parse(data.body).text
+                        });
 
                         //subscribe to direct message and store subscription
                         let directMessageSubscription = state.stompClient.subscribe('/topic/direct/message/' + JSON.parse(data.body).text, (data) => dispatch('handleDirectMessage', data));
@@ -246,32 +268,37 @@ export default {
                 }).goAway(3500);
             }
             commit(CHATSTORE_SET_CONNECTED, false);
-            dispatch('setChannelSubscriptions',[]);
+            dispatch('setChannelSubscriptions', []);
             dispatch('clearChannelParticipants');
             commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, []);
         },
-        setConnected({commit}, isConnected){
+        setConnected({commit}, isConnected) {
             commit(CHATSTORE_SET_CONNECTED, isConnected);
         },
-        setUsersConnected({commit}, data){
+        setUsersConnected({commit}, data) {
             commit(CHATSTORE_SET_USERS_CONNECTED, JSON.parse(data.body));
         },
-        disconnectUser({commit}, payload){
+        disconnectUser({commit}, payload) {
             const user = payload.body;
             commit(CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER, user);
             commit(CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER, user);
             //TODO show toaster
         },
 
-        updateCurrentMessage({commit}, currentMessage){
+        updateCurrentMessage({commit}, currentMessage) {
             commit(CHATSTORE_UPDATE_CURRENT_MESSAGE, currentMessage);
         },
-        toggleColor({commit}){
+        toggleColor({commit}) {
             commit(CHATSTORE_TOGGLE_COLOR);
         },
         sendMessage({state}, payload) {
             state.stompClient.send("/app/shared/" + state.channelSubscriptions[0].channel.channelId, {},
-                JSON.stringify({'from': payload.from, 'text': payload.msg, 'channel': payload.channel, 'color': payload.color}));
+                JSON.stringify({
+                    'from': payload.from,
+                    'text': payload.msg,
+                    'channel': payload.channel,
+                    'color': payload.color
+                }));
         },
         showMessage({state, dispatch}, data) {
             let author = JSON.parse(data.body).from;
@@ -283,8 +310,13 @@ export default {
 
             if (value.toLowerCase() == 'enter') {
                 if (state.currentLine.value) {
-                    dispatch('setCurrentLine', {value: state.currentLine.value, channel: channel.name, time: time, author: author});
-                    dispatch('addMessage',{data: state.currentLine, textClass: color});
+                    dispatch('setCurrentLine', {
+                        value: state.currentLine.value,
+                        channel: channel.name,
+                        time: time,
+                        author: author
+                    });
+                    dispatch('addMessage', {data: state.currentLine, textClass: color});
                     dispatch('setCurrentLine', {value: "", channel: "", author: "", time: undefined});
                     dispatch('updateCurrentMessage', "");
                 }
@@ -300,15 +332,21 @@ export default {
             }
 
         },
-        addMessage({commit, dispatch}, payload){
+        addMessage({commit, dispatch}, payload) {
             const res = commit(CHATSTORE_ADD_MESSAGE, payload);
-            setTimeout(()=>{
+            setTimeout(() => {
                 eventBus.$emit('transcribeScroll');
-            },100);
+            }, 100);
             dispatch('keepAlive', null, {root: true});
         },
-        setCurrentLine({commit}, payload){
-            commit('chat/setCurrentLine', {value: payload.value, color: payload.color, time: payload.time, author: payload.author, channel: payload.channel});
+        setCurrentLine({commit}, payload) {
+            commit('chat/setCurrentLine', {
+                value: payload.value,
+                color: payload.color,
+                time: payload.time,
+                author: payload.author,
+                channel: payload.channel
+            });
         },
 
         subscribeToChannel({dispatch, state}, channel) {
@@ -383,7 +421,7 @@ export default {
                 dispatch('directChatStart', username);
             }
         },
-        directChatStart({commit, state, dispatch, rootState} , username) {
+        directChatStart({commit, state, dispatch, rootState}, username) {
             const unique = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();
 
             //subscribe to direct message and store subscription
@@ -398,13 +436,13 @@ export default {
                     'channel': {name: username}
                 }));
 
-            dispatch('addDirectChatSession',{channel: unique, username: username});
+            dispatch('addDirectChatSession', {channel: unique, username: username});
 
         },
-        addDirectMessageSubscription({commit}, subscription){
+        addDirectMessageSubscription({commit}, subscription) {
             commit(CHATSTORE_ADD_DIRECT_MESSAGE_SUBSCRIPTION, subscription);
         },
-        addDirectChatSession({commit, rootState}, payload){
+        addDirectChatSession({commit, rootState}, payload) {
             const session = {
                 directChatUsernames: [payload.username, rootState.auth.name],
                 directChatChannel: payload.channel,
@@ -421,11 +459,11 @@ export default {
                 icon: 'chat'
             }).goAway(3500);
 
-            setTimeout(()=>{
+            setTimeout(() => {
                 eventBus.$emit('scroll', payload.channel);
-            },100);
+            }, 100);
         },
-        setDirectChatSessions({commit}, sessions){
+        setDirectChatSessions({commit}, sessions) {
             commit(CHATSTORE_SET_DIRECT_CHAT_SESSIONS, sessions);
         },
         sendDirectTextMessage({state, rootState, dispatch}, session) {
@@ -435,12 +473,12 @@ export default {
                     'text': session.directChatInputText,
                     'channel': {name: session.directChatChannel}
                 }));
-            dispatch('updateDirectChatSessionInputText',{session: session, text:""});
+            dispatch('updateDirectChatSessionInputText', {session: session, text: ""});
         },
-        updateDirectChatSessionInputText({commit}, payload){
+        updateDirectChatSessionInputText({commit}, payload) {
             commit(CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT, payload);
         },
-        handleDirectMessage({commit, dispatch}, data){
+        handleDirectMessage({commit, dispatch}, data) {
             let author = JSON.parse(data.body).from;
             let text = JSON.parse(data.body).text;
             let channel = JSON.parse(data.body).channel;
@@ -456,12 +494,12 @@ export default {
 
             //not pretty, but emitting a scroll event on an action invoked by a listener is not trivial.
             //this is the cleanest way I've found to notify all listener components
-            setTimeout(()=>{
+            setTimeout(() => {
                 eventBus.$emit('scroll', channel.name);
-            },100);
+            }, 100);
             dispatch('keepAlive', null, {root: true});
         },
-        closeDirectChatSession({commit}, session){
+        closeDirectChatSession({commit}, session) {
             commit(CHATSTORE_CLOSE_DIRECT_CHAT_SESSION, session);
         }
     }

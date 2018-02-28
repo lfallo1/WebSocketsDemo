@@ -56,10 +56,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .maximumSessions(1)
                 .maxSessionsPreventsLogin(true);
 
+        /*
+            - The "/shared" path needs to be specified as allowed because it is used when initializing the socket endpoint
+            - all the websocket endpoints have their security defined in WebSocketSecurityConfig.java
+        */
 //		// @formatter:off
         http
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
-                .and().authorizeRequests().antMatchers("/", "/invalidSession", "/api/config/**", "/api/channel/**", "/shared/**", "/topic/**").permitAll() //routes
+                .and().authorizeRequests().antMatchers("/", "/invalidSession", "/api/config/**", "/api/channel/**", "/shared/**").permitAll() //routes
                 .and().formLogin()
                 .loginPage("/login").defaultSuccessUrl("/").permitAll() //login
                 .and().authorizeRequests().anyRequest().authenticated() //require auth for other requests

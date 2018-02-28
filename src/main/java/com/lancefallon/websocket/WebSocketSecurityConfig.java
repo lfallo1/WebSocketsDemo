@@ -33,8 +33,8 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/shared", "/channelcount", "/direct");
-        registry.addEndpoint("/shared", "/channelcount", "/direct").withSockJS();
+        registry.addEndpoint("/shared", "/direct" /*, "test" */);
+        registry.addEndpoint("/shared", "/direct" /*, "test" */).withSockJS();
     }
 
 }
