@@ -1,12 +1,14 @@
 String template = new File("${project.basedir}/src/main/docker/DockerComposeTemplate".toString()).getText()
 
-//def env = System.getenv()
-//def postgresUser = env.get('POSTGRES_USER')
-//def postgresPassword = env.get('POSTGRES_PASSWORD')
+def postgresUser = project.properties['postgres.user']
+def postgresPassword = project.properties['postgres.password']
+println "postgresUser " + postgresUser
+println "postgresPassword " + postgresPassword
+
 def imageTag = project.properties['git.commit.id.abbrev']
 
 def dockerFileText = new groovy.text.SimpleTemplateEngine().createTemplate(template)
-        .make([gitCommit: imageTag])
+        .make([gitCommit: imageTag, postgresUser: postgresUser, postgresPassword: postgresPassword])
 
 println "writing file " + "${project.basedir}/src/main/docker/compose/docker-compose.yml"
 File dockerFile = new File("${project.basedir}/src/main/docker/compose/docker-compose.yml".toString())

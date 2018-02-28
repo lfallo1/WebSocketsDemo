@@ -28,8 +28,10 @@
         <docker.host>http://127.0.0.1:2375</docker.host>
         <docker.image.tag>${git.commit.id.abbrev}</docker.image.tag>
         <git.generate.properties>true</git.generate.properties>
-        <docker.username>dummy</docker.username>
-        <docker.password>dummy</docker.password>
+        <docker.username>${DOCKER_USERNAME}</docker.username>
+        <docker.password>${DOCKER_PASSWORD}</docker.password>
+        <postgres.user>${POSTGRES_USER}</postgres.user>
+        <postgres.password>${POSTGRES_PASSWORD}</postgres.password>
     </properties>
 
     <dependencies>
@@ -59,7 +61,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-messaging</artifactId>
@@ -145,6 +147,7 @@
             </plugin>
 
             <plugin>
+                <!-- plugin allowing groovy scripts to run at the time of builds (used for creating docker files) -->
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
                 <version>1.5</version>

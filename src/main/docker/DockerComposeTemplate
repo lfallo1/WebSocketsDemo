@@ -10,8 +10,8 @@ services:
     depends_on:
       - postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: production_secret
+      POSTGRES_USER: ${postgresUser}
+      POSTGRES_PASSWORD: ${postgresPassword}
       SPRING_PROFILES_ACTIVE: prod
   postgres:
     image: postgres
@@ -19,8 +19,8 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: production_secret
+      POSTGRES_USER: ${postgresUser}
+      POSTGRES_PASSWORD: ${postgresPassword}
       POSTGRES_DB: TranscribeDb
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
