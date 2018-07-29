@@ -13,8 +13,8 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="">Websocket Demo</a>
-                    <ul class="nav navbar-nav">
+                    <a class="navbar-brand" href="/">Websocket Demo</a>
+                    <ul class="nav navbar-nav" v-if="!hideConnect">
                         <li class="connected-navbar-message"
                             :class="{'connected':connected, 'disconnected':!connected}">
                             <a @click.prevent.stop href="">
@@ -34,6 +34,9 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div :class="{'collapse' : !navExpanded}" class="navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="/faq"><i class="material-icons with-text">contact_support</i>&nbsp;FAQ</a>
+                        </li>
                         <li>
                             <a href="" @click.prevent.stop="" v-if="auth.name"><i class="material-icons with-text">account_circle</i>&nbsp;{{'Signed in as ' + auth.name}}</a>
                             <a href="" @click.prevent.stop="" v-else>Not signed in</a>
@@ -58,7 +61,6 @@
 
 <script>
 
-    import config from '../../config.js';
     import {mapState, mapGetters, mapActions} from 'vuex';
 
     export default {
@@ -77,7 +79,8 @@
                 channelSubscriptions: state => state.chat.channelSubscriptions,
                 channelParticipants: state => state.chat.channelParticipants,
                 connected: state => state.chat.connected,
-                usersConnected: state => state.chat.usersConnected
+                usersConnected: state => state.chat.usersConnected,
+                hideConnect: state => state.chat.hideConnect
             })
         },
         methods: {

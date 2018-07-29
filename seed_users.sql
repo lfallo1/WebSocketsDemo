@@ -1,42 +1,62 @@
-CREATE  TABLE users (
-  username VARCHAR(45) NOT NULL ,
-  password VARCHAR(255) NOT NULL ,
-  enabled SMALLINT NOT NULL DEFAULT 1 ,
-  PRIMARY KEY (username));
-CREATE SEQUENCE user_roles_seq;
+create sequence user_roles_seq
+;
 
-CREATE TABLE user_roles (
-  user_role_id int NOT NULL DEFAULT NEXTVAL ('user_roles_seq'),
-  username varchar(45) NOT NULL,
-  role varchar(45) NOT NULL,
-  PRIMARY KEY (user_role_id),
-  CONSTRAINT uni_username_role UNIQUE (role,username),
-  CONSTRAINT fk_username FOREIGN KEY (username) REFERENCES users (username));
+create sequence channel_seq
+;
 
-CREATE TABLE channel (
-  channel_id int NOT NULL DEFAULT NEXTVAL ('channel_seq'),
-  name varchar(45) NOT NULL,
-  PRIMARY KEY (channel_id));
+create sequence user_transcribe_seq
+;
 
-CREATE TABLE user_transcribe_channel (
-  user_transcribe_id int NOT NULL DEFAULT NEXTVAL ('user_transcribe_seq'),
-  username varchar(45) NOT NULL,
-  channel int NOT NULL,
-  PRIMARY KEY (user_transcribe_id),
-  CONSTRAINT fk_username FOREIGN KEY (username) REFERENCES channel (username));
+create table users
+(
+  username varchar(45) not null
+    constraint users_pkey
+    primary key,
+  password varchar(255) not null,
+  enabled smallint default 1 not null
+)
+;
 
-CREATE INDEX fk_username_idx ON user_roles (username);
+create table user_roles
+(
+  user_role_id integer default nextval('user_roles_seq'::regclass) not null
+    constraint user_roles_pkey
+    primary key,
+  username varchar(45) not null
+    constraint fk_username
+    references users,
+  role varchar(45) not null,
+  constraint uni_username_role
+  unique (role, username)
+)
+;
 
-INSERT INTO users(username,password,enabled)
-VALUES ('transcriber_msdn','$2a$10$/BPbiwTq4ljnD0GPBOW7juUwwl8yQSEBbYwsF4cAW1eoOp8yogILC', 1);
-INSERT INTO users(username,password,enabled)
-VALUES ('transcriber_traffic','$2a$10$.qXl8BXAb3u9L7TdJDY9u.DEmgLtxmhbzR7NI0J9X.UY3gmUTWxSC', 1);
-INSERT INTO users(username,password,enabled)
-VALUES ('transcriber_lrpu','$2a$10$TjykuOlzEP8BJT1Ei1yLu.tV0u61cMVjuuRx4QAMVpjt29ZCHcWJK', 1);
+create index fk_username_idx
+  on user_roles (username)
+;
 
-INSERT INTO user_roles (username, role)
-VALUES ('transcriber_msdn', 'ROLE_TRANSCRIBER');
-INSERT INTO user_roles (username, role)
-VALUES ('transcriber_traffic', 'ROLE_TRANSCRIBER');
-INSERT INTO user_roles (username, role)
-VALUES ('transcriber_lrpu', 'ROLE_TRANSCRIBER');
+create table channel
+(
+  channel_id integer default nextval('channel_seq'::regclass) not null
+    constraint channel_pkey
+    primary key,
+  name varchar(45) not null
+)
+;
+
+create table transcriber
+(
+  transcriber_id integer default nextval('user_transcribe_seq'::regclass) not null
+    constraint user_transcribe_channel_pkey
+    primary key,
+  username varchar(45) not null
+    constraint fk_username
+    references users,
+  channel_id integer not null
+)
+;
+
+INSERT INTO public.users (username, password, enabled) VALUES ('wa3rqd', '$2a$12$48PnOLcqjQxRvAU4P1K7MuS9BBKRtXrm8Nvn/R66YZY8v8bt04fEC', 1);
+INSERT INTO public.user_roles (user_role_id, username, role) VALUES (1, 'wa3rqd', 'ROLE_TRANSCRIBER');
+INSERT INTO public.channel (channel_id, name) VALUES (1, 'MSN');
+INSERT INTO public.transcriber (transcriber_id, username, channel_id) VALUES (1, 'wa3rqd', 1);

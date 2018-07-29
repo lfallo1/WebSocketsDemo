@@ -1,7 +1,10 @@
 <template>
     <div>
         <div v-if="channelSubscriptions.length == 0">
-            <div id="subscription-list" v-if="connected">
+            <div v-if="channelsListen.length === 0 && channelsTranscribe.length === 0">
+                <div class="text-danger">There are currently channels available</div>
+            </div>
+            <div id="subscription-list" v-if="connected && channelsListen.length > 0">
                 <h3><i class="material-icons">rss_feed</i>&nbsp;Listen to feed</h3>
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : channelSubscriptions.filter(s=>s.channel == channel).length > 0}"
@@ -11,7 +14,7 @@
                 </div>
             </div>
 
-            <div id="transcribe-list" v-if="auth.name && connected">
+            <div id="transcribe-list" v-if="auth.name && connected && channelsTranscribe.length > 0">
                 <h3><i class="material-icons">mode_edit</i>&nbsp;Transcribe to feed</h3>
                 <div class="btn-group text-center" role="group">
                     <button :class="{'active' : channelSubscriptions.filter(s=>s.channel == channel).length > 0}"

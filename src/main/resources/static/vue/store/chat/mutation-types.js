@@ -11,6 +11,7 @@ export const CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER = 'chat/u
 export const CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER = 'chat/removeDirectChatSessionByUser'
 export const CHATSTORE_ADD_DIRECT_MESSAGE = 'chat/addDirectMessage';
 export const CHATSTORE_SET_CONNECTED = 'chat/setConnected';
+export const CHATSTORE_SET_HIDE_CONNECT = 'chat/setHideConnect';
 export const CHATSTORE_TOGGLE_COLOR = 'chat/toggleColor';
 export const CHATSTORE_ADD_MESSAGE = 'chat/addMessage';
 export const CHATSTORE_SET_USERS_CONNECTED = 'chat/setUsersConnected';

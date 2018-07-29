@@ -11,7 +11,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @WebAppConfiguration
 public class WebsocketDemoApplicationTests {
 
-	@Test
 	public void contextLoads() {
 	}
 

@@ -8,6 +8,7 @@ import store from './store/store.js';
 import TextMessages from "./components/TextMessages.vue";
 import LoginForm from "./components/LoginForm.vue";
 import UsersConnected from "./components/UsersConnected.vue";
+import Faq from "./components/Faq.vue";
 import Navbar from "./components/shared/Navbar.vue";
 import Footer from "./components/shared/Footer.vue";
 import Modal from 'modal-vue';
@@ -23,6 +24,7 @@ Vue.component('app-navbar', Navbar);
 Vue.component('app-footer', Footer);
 Vue.component('app-usersconnected', UsersConnected);
 Vue.component('app-loginform', LoginForm);
+Vue.component('app-faq', Faq);
 Vue.component('modal', Modal);
 
 //used exclusively for emitting scroll events triggered after websocket message handler events

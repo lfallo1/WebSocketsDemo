@@ -38,11 +38,7 @@
     import ChannelList from './ChannelList.vue';
     import TextMessageInput from './TextMessageInput.vue';
     import DirectChatSessions from './DirectChatSessions.vue';
-    import Stomp from 'stompjs';
-    import config from '../config.js';
-    import axios from 'axios';
-    import {eventBus} from '../main.js';
-    import {mapState, mapActions} from 'vuex';
+    import { mapActions } from 'vuex';
 
     export default {
 

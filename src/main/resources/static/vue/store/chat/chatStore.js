@@ -1,4 +1,6 @@
 import Vue from "vue";
+import Stomp from 'stompjs';
+
 import {
     CHATSTORE_ADD_CHANNEL_SUBSCRIPTION,
     CHATSTORE_ADD_DIRECT_CHAT_SESSION,
@@ -12,6 +14,7 @@ import {
     CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS,
     CHATSTORE_SET_CHANNELS,
     CHATSTORE_SET_CONNECTED,
+    CHATSTORE_SET_HIDE_CONNECT,
     CHATSTORE_SET_CURRENT_LINE,
     CHATSTORE_SET_DIRECT_CHAT_SESSIONS,
     CHATSTORE_SET_USERS_CONNECTED,
@@ -39,7 +42,8 @@ export default {
         color: false,
         messages: [],
         currentLine: {value: "", channel: "", author: "", time: undefined},
-        currentMessage: ""
+        currentMessage: "",
+        hideConnect: false
     },
     getters: {
         channelsTranscribe(state) {
@@ -109,6 +113,9 @@ export default {
         },
         [CHATSTORE_SET_CONNECTED](state, value) {
             state.connected = value;
+        },
+        [CHATSTORE_SET_HIDE_CONNECT](state, value) {
+            state.hideConnect = value;
         },
         [CHATSTORE_SET_CHANNELS](state, channels) {
             state.channels = channels;
@@ -274,6 +281,9 @@ export default {
         },
         setConnected({commit}, isConnected) {
             commit(CHATSTORE_SET_CONNECTED, isConnected);
+        },
+        setHideConnect({commit}, hideConnect){
+            commit(CHATSTORE_SET_HIDE_CONNECT, hideConnect);
         },
         setUsersConnected({commit}, data) {
             commit(CHATSTORE_SET_USERS_CONNECTED, JSON.parse(data.body));
