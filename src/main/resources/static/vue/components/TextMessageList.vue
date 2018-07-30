@@ -57,7 +57,7 @@
     .chat-list-item-message-text {
         margin-top: -7px;
         font-weight: bold;
-        white-space: pre;
+        white-space: pre-wrap;
     }
 
 

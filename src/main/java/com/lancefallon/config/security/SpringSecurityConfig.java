@@ -51,10 +51,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 //        ConcurrentSessionControlAuthenticationStrategy sessionStrategy = concurrentSessionStrategy();
 
-        //set max of one session - otherwise, need to update how managing of logged in users works
-        http.sessionManagement()
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(true);
+        //set max of one session
+//        http.sessionManagement()
+//                .maximumSessions(1)
+//                .maxSessionsPreventsLogin(true);
 
         /*
             - The "/shared" path needs to be specified as allowed because it is used when initializing the socket endpoint

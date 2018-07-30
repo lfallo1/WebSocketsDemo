@@ -1,16 +1,16 @@
 <template>
     <div id="connected-users-container">
         <div class="connected-users-label">
-            <i class="material-icons with-text md-18">recent_actors</i>&nbsp;Logged in users
+            <i class="material-icons with-text md-18">recent_actors</i>&nbsp;Connected users
         </div>
         <div v-if="connected">
             <span class="connected-user" v-for="(username, idx) in usersConnected">
                 <span :class="{'clickable text-primary' : auth.name && auth.name != username}" @click="directChatRequest(username)">{{username}}{{idx < usersConnected.length-1 ? ', ' : ''}}</span>
             </span>
-            <span class="no-connected-users-text" v-if="usersConnected.length == 0">There are currently no logged in users</span>
+            <span class="no-connected-users-text" v-if="usersConnected.length == 0">There are currently no connected users</span>
         </div>
         <div v-else>
-            <span class="no-connected-users-text">Must be connected to server to view logged in users</span>
+            <span class="no-connected-users-text">Must be connected to server to view connected users</span>
         </div>
     </div>
 </template>

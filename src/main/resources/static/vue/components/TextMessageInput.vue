@@ -97,7 +97,7 @@
         padding: 12px;
         font-weight: bold;
         font-size: 22px;
-        white-space: pre;
+        white-space: pre-wrap;
     }
 
     #chat-window input {
