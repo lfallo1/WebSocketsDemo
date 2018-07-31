@@ -11,14 +11,16 @@ public class OutputMessage {
     private String text;
     private String time;
     private String color;
+    private Integer order;
 
-    public OutputMessage(final String from, final String text, final String time, final Channel channel, final String color) {
+    public OutputMessage(final String from, final String text, final String time, final Channel channel, final String color, final Integer order) {
 
         this.from = from;
         this.channel = channel;
         this.text = text;
         this.time = time;
         this.color = color;
+        this.order = order;
     }
 
     public Channel getChannel() {
@@ -43,5 +45,9 @@ public class OutputMessage {
 
     public String getColor() {
         return color;
+    }
+
+    public Integer getOrder() {
+        return order;
     }
 }

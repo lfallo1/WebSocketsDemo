@@ -10,6 +10,7 @@ public class WebsocketMessage {
     private String text;
     private String color;
     private Channel channel;
+    private Integer order;
 
     public WebsocketMessage() {
     }
@@ -40,5 +41,17 @@ public class WebsocketMessage {
 
     public String getColor() {
         return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public Integer getOrder() {
+        return order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
     }
 }

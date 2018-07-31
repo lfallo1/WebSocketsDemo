@@ -5,22 +5,25 @@
                         class="glyphicon glyphicon-retweet"></span>&nbsp;Change sender</span>
             <input class="form-control" :disabled="channelSubscriptions.length == 0" type="text"
                    @keydown="nextCharacter"
-                   v-model="currentMessage"></input>
+                   v-model="currentMessage"/>
             <span id="send-button" :class="'input-group-addon btn bg-' + textColor"
                   :disabled="channelSubscriptions.length == 0" @click="carriageReturn">Send</span>
         </div>
-        <div id="current-line" :class="'text-' + currentLine.color">{{currentLine.value}}</div>
+        <!--<div class="current-line" :class="'text-' + currentLine.color" v-if="auth.name && isTranscriber">-->
+        <!--{{currentMessage}}-->
+        <!--</div>-->
+        <div class="current-line" :class="'text-' + currentLine.color">{{currentLine.value}}</div>
     </div>
 </template>
 
 <script>
 
-    import {mapState, mapGetters, mapActions} from 'vuex';
+    import {mapActions, mapGetters, mapState} from 'vuex';
 
     export default {
         data() {
             return {
-                testMessage: ''
+                currentMessage: ''
             }
         },
         methods: {
@@ -42,11 +45,15 @@
             nextCharacter(e) {
                 if (this.isCharacterKeyPress(e)) {
                     this.send(this.auth.name, e.key);
+                    if (e.key === 'Enter') {
+                        this.currentMessage = '';
+                    }
                 }
             },
 
             carriageReturn() {
-                this.send(this.auth.name, 'enter');
+                this.send(this.auth.name, 'Enter');
+                this.currentMessage = '';
             },
             isCharacterKeyPress(e) {
                 var keycode = e.keyCode;
@@ -93,7 +100,7 @@
         color: #eee;
     }
 
-    #current-line {
+    .current-line {
         padding: 12px;
         font-weight: bold;
         font-size: 22px;

@@ -338,6 +338,7 @@ export default {
                     dispatch('setCurrentLine', {value: value, color: color});
                 }
             } else {
+                // state.currentLineArray.push({character: value, order: order})
                 dispatch('setCurrentLine', {color: color, value: state.currentLine.value + value});
             }
 
