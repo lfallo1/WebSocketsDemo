@@ -9,19 +9,20 @@ import {
     CHATSTORE_ADD_MESSAGE,
     CHATSTORE_CLEAR_CHANNEL_PARTICIPANTS,
     CHATSTORE_CLOSE_DIRECT_CHAT_SESSION,
+    CHATSTORE_NEXT_CHARACTER,
     CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER,
+    CHATSTORE_REMOVE_LAST_CHARACTER,
     CHATSTORE_SET_CHANNEL_PARTICIPANTS,
     CHATSTORE_SET_CHANNEL_SUBSCRIPTIONS,
     CHATSTORE_SET_CHANNELS,
     CHATSTORE_SET_CONNECTED,
-    CHATSTORE_SET_HIDE_CONNECT,
     CHATSTORE_SET_CURRENT_LINE,
     CHATSTORE_SET_DIRECT_CHAT_SESSIONS,
+    CHATSTORE_SET_HIDE_CONNECT,
     CHATSTORE_SET_USERS_CONNECTED,
     CHATSTORE_STOMP_CLIENT_CONNECT,
     CHATSTORE_TOGGLE_COLOR,
     CHATSTORE_UNSUBSCRIBE_DIRECT_MESSAGE_SUBSCRIPTION_BY_USER,
-    CHATSTORE_UPDATE_CURRENT_MESSAGE,
     CHATSTORE_UPDATE_DIRECTCHATSESSION_TEXT
 } from './mutation-types.js';
 import axios from 'axios';
@@ -41,11 +42,14 @@ export default {
         connected: false,
         color: false,
         messages: [],
-        currentLine: {value: "", channel: "", author: "", time: undefined},
-        currentMessage: "",
-        hideConnect: false
+        currentLine: {value: [], channel: "", author: "", time: undefined},
+        hideConnect: false,
+        counter: 0
     },
     getters: {
+        currentLineText(state) {
+            return state.currentLine.value.sort((a, b) => a.order - b.order).map(item => item.value).join('');
+        },
         channelsTranscribe(state) {
             return state.channels.filter(c => c.transcribers && c.transcribers.length > 0);
         },
@@ -142,8 +146,14 @@ export default {
         [CHATSTORE_ADD_MESSAGE](state, payload) {
             state.messages.push({data: payload.data, textClass: payload.textClass});
         },
-        [CHATSTORE_UPDATE_CURRENT_MESSAGE](state, currentMessage) {
-            state.currentMessage = currentMessage;
+        [CHATSTORE_NEXT_CHARACTER](state, payload) {
+            state.currentLine.color = payload.color;
+            state.currentLine.value.push(payload.value);
+        },
+        [CHATSTORE_REMOVE_LAST_CHARACTER](state) {
+            if (state.currentLine.value.length > 0) {
+                state.currentLine.value.sort((a, b) => b.order - a.order).splice(0, 1);
+            }
         },
         [CHATSTORE_SET_CURRENT_LINE](state, currentLine) {
             state.currentLine = currentLine;
@@ -282,7 +292,7 @@ export default {
         setConnected({commit}, isConnected) {
             commit(CHATSTORE_SET_CONNECTED, isConnected);
         },
-        setHideConnect({commit}, hideConnect){
+        setHideConnect({commit}, hideConnect) {
             commit(CHATSTORE_SET_HIDE_CONNECT, hideConnect);
         },
         setUsersConnected({commit}, data) {
@@ -294,10 +304,6 @@ export default {
             commit(CHATSTORE_REMOVE_DIRECT_CHAT_SESSION_BY_USER, user);
             //TODO show toaster
         },
-
-        updateCurrentMessage({commit}, currentMessage) {
-            commit(CHATSTORE_UPDATE_CURRENT_MESSAGE, currentMessage);
-        },
         toggleColor({commit}) {
             commit(CHATSTORE_TOGGLE_COLOR);
         },
@@ -307,39 +313,38 @@ export default {
                     'from': payload.from,
                     'text': payload.msg,
                     'channel': payload.channel,
-                    'color': payload.color
+                    'color': payload.color,
+                    'order': state.counter++
                 }));
         },
-        showMessage({state, dispatch}, data) {
+        showMessage({commit, state, dispatch, getters}, data) {
             let author = JSON.parse(data.body).from;
             let value = JSON.parse(data.body).text;
             let color = JSON.parse(data.body).color;
             let channel = JSON.parse(data.body).channel;
             let time = JSON.parse(data.body).time;
+            let order = JSON.parse(data.body).order;
             console.log("received message from channel: " + channel.toString());
 
             if (value.toLowerCase() == 'enter') {
-                if (state.currentLine.value) {
-                    dispatch('setCurrentLine', {
-                        value: state.currentLine.value,
-                        channel: channel.name,
-                        time: time,
-                        author: author
+                if (state.currentLine.value.length > 0) {
+                    dispatch('addMessage', {
+                        data: {
+                            value: state.currentLine.value.sort((a, b) => a.order - b.order).map(item => item.value).join(''),
+                            channel: channel.name,
+                            time: time,
+                            author: author
+                        },
+                        textClass: color
                     });
-                    dispatch('addMessage', {data: state.currentLine, textClass: color});
-                    dispatch('setCurrentLine', {value: "", channel: "", author: "", time: undefined});
-                    dispatch('updateCurrentMessage', "");
+                    dispatch('setCurrentLine', {value: [], channel: "", author: "", time: undefined});
                 }
                 dispatch('toggleColor');
             }
             else if (value.toLowerCase() == 'backspace') {
-                if (state.currentLine.value.length > 0) {
-                    const value = state.currentLine.value.substring(0, state.currentLine.value.length - 1);
-                    dispatch('setCurrentLine', {value: value, color: color});
-                }
+                commit(CHATSTORE_REMOVE_LAST_CHARACTER);
             } else {
-                // state.currentLineArray.push({character: value, order: order})
-                dispatch('setCurrentLine', {color: color, value: state.currentLine.value + value});
+                commit(CHATSTORE_NEXT_CHARACTER, {color: color, value: {value: value, order: order}});
             }
 
         },

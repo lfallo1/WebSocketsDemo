@@ -12,7 +12,7 @@
         <!--<div class="current-line" :class="'text-' + currentLine.color" v-if="auth.name && isTranscriber">-->
         <!--{{currentMessage}}-->
         <!--</div>-->
-        <div class="current-line" :class="'text-' + currentLine.color">{{currentLine.value}}</div>
+        <div class="current-line" :class="'text-' + currentLine.color">{{currentLineText}}</div>
     </div>
 </template>
 
@@ -70,14 +70,6 @@
             }
         },
         computed: {
-            currentMessage: {
-                get() {
-                    return this.$store.state.chat.currentMessage
-                },
-                set(value) {
-                    this.updateCurrentMessage(value);
-                }
-            },
             ...mapState({
                 auth: state => state.auth,
                 channelSubscriptions: state => state.chat.channelSubscriptions,
@@ -87,7 +79,8 @@
             }),
             ...mapGetters({
                 isTranscriber: 'chat/isTranscriber',
-                textColor: 'chat/textColor'
+                textColor: 'chat/textColor',
+                currentLineText: 'chat/currentLineText'
             })
         }
     }

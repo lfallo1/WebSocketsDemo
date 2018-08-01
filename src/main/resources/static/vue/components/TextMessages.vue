@@ -4,10 +4,6 @@
 
             <div id="chat-row-container" class="row">
 
-                <div class="characters-span">
-                    {{ sortedCharacters }}
-                </div>
-
                 <!-- list of participants in the channel -->
                 <app-participant-list></app-participant-list>
 
@@ -43,15 +39,8 @@
     import TextMessageInput from './TextMessageInput.vue';
     import DirectChatSessions from './DirectChatSessions.vue';
     import {mapActions} from 'vuex';
-    import {orderBy} from 'lodash';
 
     export default {
-
-        data() {
-            return {
-                characters: [{value: 46, order: 3}, {value: 72, order: 1}, {value: 105, order: 2}]
-            }
-        },
 
         components: {
             'app-participant-list': ChatRoomParticipantList,
@@ -71,11 +60,6 @@
             this.setCsrf();
             this.fetchUser();
             this.connect();
-        },
-        computed: {
-            sortedCharacters() {
-                return orderBy(this.characters, 'order').map(c => String.fromCharCode(c.value)).join('');
-            }
         }
     }
 </script>
