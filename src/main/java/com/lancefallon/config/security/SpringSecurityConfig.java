@@ -61,7 +61,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
             - all the websocket endpoints have their security defined in WebSocketSecurityConfig.java
         */
 //		// @formatter:off
-        http
+        http.csrf().disable()
                 .authorizeRequests().antMatchers("/dist/**", "/bower/**", "/images/**", "/**/favicon.ico").permitAll() //vue
                 .and().authorizeRequests().antMatchers("/", "/faq", "/invalidSession", "/api/config/**", "/api/channel/**", "/shared/**").permitAll() //routes
                 .and().formLogin()

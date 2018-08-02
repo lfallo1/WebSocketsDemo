@@ -1,0 +1,10 @@
+version: '3'
+services:
+  transcription-demo:
+    image: transcription-demo-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
