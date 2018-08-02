@@ -15,3 +15,6 @@ npm run dev
 #### Project supported by Jim Cosby & Lance Fallon
 
 mvn clean install docker:build -DskipTests=true -Ddocker.host=unix:///var/run/docker.sock -DPOSTGRES_USER=postgres -DPOSTGRES_PASSWORD=production_secret -DDOCKER_USERNAME=lfallo1 -DDOCKER_PASSWORD=Snoopy08
+
+###### using spotify docker plugin
+mvn clean install -DskipTests=true docker:build && docker-compose up
